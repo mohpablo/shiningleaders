@@ -47,9 +47,9 @@
                         $links = [
                             ['route' => 'parent.dashboard', 'label' => 'الرئيسية', 'icon' => '🏠'],
                             ['route' => 'add-student', 'label' => 'إضافة ابن', 'icon' => '➕'],
-                            ['route' => 'parent.courses', 'label' => 'الدورات', 'icon' => '🎓'],
-                            ['route' => 'parent.payments', 'label' => 'المدفوعات', 'icon' => '💳'],
-                            ['route' => 'parent.settings', 'label' => 'الإعدادات', 'icon' => '⚙️'],
+                            // ['route' => 'parent.courses', 'label' => 'الدورات', 'icon' => '🎓'],
+                            // ['route' => 'parent.payments', 'label' => 'المدفوعات', 'icon' => '💳'],
+                            // ['route' => 'parent.settings', 'label' => 'الإعدادات', 'icon' => '⚙️'],
                         ];
                     } else {
                         $links = [
