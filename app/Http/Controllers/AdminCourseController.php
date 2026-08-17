@@ -23,7 +23,24 @@ class AdminCourseController extends Controller
     {
         $teachers = User::where('role', 'teacher')->get();
 
-        return view('admin.courses.create', compact('teachers'));
+        // Define the grades to match what the parents see
+        $grades = [
+            'Pre-KG',
+            'KG 1',
+            'KG 2',
+            'Grade 1',
+            'Grade 2',
+            'Grade 3',
+            'Grade 4',
+            'Grade 5',
+            'Grade 6',
+            'Grade 7',
+            'Grade 8',
+            'Grade 9',
+            'Grade 10'
+        ];
+
+        return view('admin.courses.create', compact('teachers', 'grades'));
     }
 
     public function store(Request $request)
@@ -31,8 +48,9 @@ class AdminCourseController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'grade' => ['required', 'string', 'max:255'], // Added grade validation
             'monthly_fee' => ['required', 'numeric', 'min:0'],
-            'teacher_id' => ['nullable', 'exists:users,id'],
+            'teacher_id' => ['required', 'exists:users,id'],
             'monthly_sessions' => ['required', 'integer', 'min:1', 'max:100'],
         ]);
 
@@ -47,7 +65,25 @@ class AdminCourseController extends Controller
 
         $students = $course->subscriptions()->with('student')->get()->pluck('student')->unique('id');
 
-        return view('admin.courses.edit', compact('course', 'teachers', 'students'));
+        // مصفوفة الصفوف الدراسية
+        $grades = [
+            'Pre-KG',
+            'KG 1',
+            'KG 2',
+            'Grade 1',
+            'Grade 2',
+            'Grade 3',
+            'Grade 4',
+            'Grade 5',
+            'Grade 6',
+            'Grade 7',
+            'Grade 8',
+            'Grade 9',
+            'Grade 10'
+        ];
+
+        // إضافة 'grades' داخل compact
+        return view('admin.courses.edit', compact('course', 'teachers', 'students', 'grades'));
     }
 
     public function update(Request $request, Course $course)
@@ -56,7 +92,8 @@ class AdminCourseController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'monthly_fee' => ['required', 'numeric', 'min:0'],
-            'teacher_id' => ['nullable', 'exists:users,id'],
+            'teacher_id' => ['required', 'exists:users,id'],
+            'grade' => ['required', 'string', 'max:255'], // Added grade validation
             'monthly_sessions' => ['required', 'integer', 'min:1', 'max:100'],
         ]);
 

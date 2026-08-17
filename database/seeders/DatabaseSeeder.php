@@ -10,6 +10,7 @@ use App\Models\subscription;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,17 +21,28 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
-            'name' => 'Mariamel Mohammady',
-            'email' => 'Mariamelmohammady19@gmail.com',
-            'password' => 'Mariamel@123',
-            'role' => 'admin',
-        ]);
-        User::factory()->create([
-            'name' => 'Belal Ashraf',
-            'email' => 'Belalashraf5@gmail.com',
-            'password' => 'Belal@123',
-            'role' => 'admin',
-        ]);
+        // User::factory()->create([
+        //     'name' => 'Mariamel Mohammady',
+        //     'email' => 'Mariamelmohammady19@gmail.com',
+        //     'password' => 'Mariamel@123',
+        //     'role' => 'admin',
+        // ]);
+        // User::factory()->create([
+        //     'name' => 'Belal Ashraf',
+        //     'email' => 'Belalashraf5@gmail.com',
+        //     'password' => 'Belal@123',
+        //     'role' => 'admin',
+        // ]);
+        User::updateOrCreate(
+            // 1. Find the user by this unique column:
+            ['email' => 'Mariamelmohammady19@gmail.com'],
+
+            // 2. Update (or create) with these values:
+            [
+                'name' => 'Mariam ElMohammady',
+                // It's highly recommended to hash passwords in Laravel!
+                'password' => Hash::make('Mariamel@123'),
+            ]
+        );
     }
 }

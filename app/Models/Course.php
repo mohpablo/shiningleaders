@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['teacher_id', 'name', 'description', 'monthly_fee', 'monthly_sessions'])]
+#[Fillable(['teacher_id', 'name', 'description', 'monthly_fee', 'monthly_sessions','grade'])]
 class Course extends Model
 {
     /** @use HasFactory<CourseFactory> */

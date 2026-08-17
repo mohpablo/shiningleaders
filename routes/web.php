@@ -18,8 +18,13 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 
 Route::middleware(['auth', 'role:parent'])->group(function () {
     Route::get('/parent/dashboard', [ParentController::class, 'dashboard'])->name('parent.dashboard');
-    Route::get('/parent/add-student', [ParentController::class,'create'])->name('parent.add-student');
-    Route::post('/parent/add-student', [ParentController::class, 'store']);
+    // Step 1: Add Student Info
+    Route::get('/add-student', [StudentController::class, 'create'])->name('add-student');
+    Route::post('/add-student', [StudentController::class, 'store'])->name('store-student');
+
+    // Step 2: Select Courses for Student
+    Route::get('/students/{student}/select-courses', [StudentController::class, 'selectCourses'])->name('select-courses');
+    Route::post('/students/{student}/select-courses', [StudentController::class, 'storeCourses'])->name('store-courses');;
 
     Route::get('/parent/courses', [ParentController::class, 'courses'])->name('parent.courses');
     Route::get('/parent/payments', [ParentController::class, 'payments'])->name('parent.payments');

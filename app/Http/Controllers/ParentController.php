@@ -211,8 +211,27 @@ class ParentController extends Controller
 
     public function create()
     {
-        $courses = Course::all();
-        return view('parent.add-student', compact('courses'));
+        // Fetch courses and group them by the 'grade' column
+        $coursesByGrade = Course::whereNotNull('grade')->get()->groupBy('grade');
+
+        // Define the academic years from Pre-KG to Grade 10
+        $academicYears = [
+            'Pre-KG',
+            'KG 1',
+            'KG 2',
+            'Grade 1',
+            'Grade 2',
+            'Grade 3',
+            'Grade 4',
+            'Grade 5',
+            'Grade 6',
+            'Grade 7',
+            'Grade 8',
+            'Grade 9',
+            'Grade 10'
+        ];
+
+        return view('parent.add-student', compact('coursesByGrade', 'academicYears'));
     }
 
     public function store(Request $request)
@@ -222,7 +241,7 @@ class ParentController extends Controller
             'age'           => ['required', 'integer', 'min:1', 'max:30'],
             'phone_number'  => ['nullable', 'string', 'max:20'],
             'school'        => ['nullable', 'string', 'max:255'],
-            'academic_year' => ['nullable', 'string', 'max:255'],
+            'academic_year' => ['required', 'string', 'max:255'], // Now required!
             'courses'       => ['nullable', 'array'],
             'courses.*'     => ['exists:courses,id'],
         ]);

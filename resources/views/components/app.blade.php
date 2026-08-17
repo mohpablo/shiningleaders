@@ -46,7 +46,7 @@
                     if (auth()->check() && auth()->user()->role === 'parent') {
                         $links = [
                             ['route' => 'parent.dashboard', 'label' => 'الرئيسية', 'icon' => '🏠'],
-                            ['route' => 'parent.add-student', 'label' => 'إضافة ابن', 'icon' => '➕'],
+                            ['route' => 'add-student', 'label' => 'إضافة ابن', 'icon' => '➕'],
                             ['route' => 'parent.courses', 'label' => 'الدورات', 'icon' => '🎓'],
                             ['route' => 'parent.payments', 'label' => 'المدفوعات', 'icon' => '💳'],
                             ['route' => 'parent.settings', 'label' => 'الإعدادات', 'icon' => '⚙️'],

@@ -12,7 +12,7 @@
                 <h2 class="text-4xl font-heading font-bold">أبنائي ({{ $count }})</h2>
                 <p class="text-midnight/70 mt-2">تابع أبناءك، اشتراكاتهم، حالات الدفع، والتقدم اليوم.</p>
             </div>
-            <a href="{{ route('parent.add-student') }}"
+            <a href="{{ route('add-student') }}"
                 class="bg-midnight text-sand px-6 py-3 font-bold border-2 border-midnight shadow-[6px_6px_0px_0px_#D97706] hover:bg-terracotta hover:text-white transition-all">
                 + إضافة ابن جديد
             </a>

@@ -4,15 +4,15 @@
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 class="text-3xl font-bold text-midnight">تحرير الدورة</h1>
-                    <p class="mt-2 text-sm text-midnight/70">يمكنك تحديث اسم الدورة، المعلم، والرسوم الشهرية هنا.</p>
+                    <p class="mt-2 text-sm text-midnight/70">يمكنك تحديث اسم الدورة، الصف الدراسي، المعلم، والرسوم الشهرية هنا.</p>
                 </div>
                 <a href="{{ route('admin.course') }}" class="inline-flex items-center justify-center rounded-3xl bg-sand px-5 py-3 text-sm font-bold text-midnight transition hover:bg-amber-100">عودة إلى الدورات</a>
             </div>
 
             @if(session('success'))
-                <div class="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
-                    {{ session('success') }}
-                </div>
+            <div class="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+                {{ session('success') }}
+            </div>
             @endif
 
             <form action="{{ route('admin.course.update', $course) }}" method="POST" class="mt-8 space-y-6">
@@ -32,6 +32,35 @@
                 </div>
 
                 <div class="grid gap-6 sm:grid-cols-2">
+
+                    <!-- حقل الصف الدراسي الجديد -->
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-midnight">الصف الدراسي</label>
+                        <select name="grade" class="w-full rounded-3xl border border-sand bg-sand/60 px-4 py-3 text-right text-midnight outline-none focus:border-midnight" required>
+                            <option value="" disabled {{ old('grade', $course->grade) ? '' : 'selected' }}>-- اختر الصف الدراسي --</option>
+                            @foreach($grades as $grade)
+                            <option value="{{ $grade }}" {{ old('grade', $course->grade) == $grade ? 'selected' : '' }}>
+                                {{ $grade }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('grade')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                    </div>
+
+                    <!-- حقل المعلم (تم تعديله ليكون مطلوباً) -->
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-midnight">المعلم</label>
+                        <select name="teacher_id" class="w-full rounded-3xl border border-sand bg-sand/60 px-4 py-3 text-right text-midnight outline-none focus:border-midnight" required>
+                            <option value="" disabled {{ old('teacher_id', $course->teacher_id) ? '' : 'selected' }}>-- اختر المعلم --</option>
+                            @foreach($teachers as $teacher)
+                            <option value="{{ $teacher->id }}" {{ old('teacher_id', $course->teacher_id) == $teacher->id ? 'selected' : '' }}>
+                                {{ $teacher->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('teacher_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                    </div>
+
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-midnight">الرسوم الشهرية</label>
                         <input type="number" step="0.01" min="0" name="monthly_fee" value="{{ old('monthly_fee', $course->monthly_fee) }}" class="w-full rounded-3xl border border-sand bg-sand/60 px-4 py-3 text-right text-midnight outline-none focus:border-midnight" required>
@@ -42,17 +71,6 @@
                         <label class="mb-2 block text-sm font-semibold text-midnight">عدد الجلسات في الشهر</label>
                         <input type="number" min="1" name="monthly_sessions" value="{{ old('monthly_sessions', $course->monthly_sessions) }}" class="w-full rounded-3xl border border-sand bg-sand/60 px-4 py-3 text-right text-midnight outline-none focus:border-midnight" required>
                         @error('monthly_sessions')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                    </div>
-
-                    <div>
-                        <label class="mb-2 block text-sm font-semibold text-midnight">المعلم</label>
-                        <select name="teacher_id" class="w-full rounded-3xl border border-sand bg-sand/60 px-4 py-3 text-right text-midnight outline-none focus:border-midnight">
-                            <option value="">بدون معلم</option>
-                            @foreach($teachers as $teacher)
-                                <option value="{{ $teacher->id }}" {{ old('teacher_id', $course->teacher_id) == $teacher->id ? 'selected' : '' }}>{{ $teacher->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('teacher_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                     </div>
                 </div>
 
@@ -106,22 +124,22 @@
                         </thead>
                         <tbody class="divide-y divide-sand/80">
                             @forelse($course->groups as $group)
-                                <tr>
-                                    <td class="px-4 py-4">{{ $group->name }}</td>
-                                    <td class="px-4 py-4">{{ $group->schedule }}</td>
-                                    <td class="px-4 py-4">{{ $group->capacity ?? 'غير محددة' }}</td>
-                                    <td class="px-4 py-4 text-left">
-                                        <form action="{{ route('admin.course.groups.destroy', [$course, $group]) }}" method="POST" class="inline-block">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="inline-flex items-center rounded-full bg-rose-500 px-4 py-2 text-xs font-bold text-white transition hover:bg-rose-600" onclick="return confirm('هل تريد حذف هذه المجموعة؟');">حذف</button>
-                                        </form>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td class="px-4 py-4">{{ $group->name }}</td>
+                                <td class="px-4 py-4">{{ $group->schedule }}</td>
+                                <td class="px-4 py-4">{{ $group->capacity ?? 'غير محددة' }}</td>
+                                <td class="px-4 py-4 text-left">
+                                    <form action="{{ route('admin.course.groups.destroy', [$course, $group]) }}" method="POST" class="inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="inline-flex items-center rounded-full bg-rose-500 px-4 py-2 text-xs font-bold text-white transition hover:bg-rose-600" onclick="return confirm('هل تريد حذف هذه المجموعة؟');">حذف</button>
+                                    </form>
+                                </td>
+                            </tr>
                             @empty
-                                <tr>
-                                    <td colspan="4" class="px-4 py-6 text-center text-midnight/70">لا توجد مجموعات لهذه الدورة.</td>
-                                </tr>
+                            <tr>
+                                <td colspan="4" class="px-4 py-6 text-center text-midnight/70">لا توجد مجموعات لهذه الدورة.</td>
+                            </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -145,16 +163,16 @@
                     </thead>
                     <tbody class="divide-y divide-sand/80">
                         @forelse($students as $student)
-                            <tr>
-                                <td class="px-4 py-4">{{ $student->name }}</td>
-                                <td class="px-4 py-4">{{ $student->age }}</td>
-                                <td class="px-4 py-4">{{ $course->teacher?->name ?? 'غير محدد' }}</td>
-                                <td class="px-4 py-4">{{ $student->parent?->name ?? 'غير معروف' }}</td>
-                            </tr>
+                        <tr>
+                            <td class="px-4 py-4">{{ $student->name }}</td>
+                            <td class="px-4 py-4">{{ $student->age }}</td>
+                            <td class="px-4 py-4">{{ $course->teacher?->name ?? 'غير محدد' }}</td>
+                            <td class="px-4 py-4">{{ $student->parent?->name ?? 'غير معروف' }}</td>
+                        </tr>
                         @empty
-                            <tr>
-                                <td colspan="4" class="px-4 py-6 text-center text-midnight/70">لا يوجد طلاب مرتبطين بهذه الدورة بعد.</td>
-                            </tr>
+                        <tr>
+                            <td colspan="4" class="px-4 py-6 text-center text-midnight/70">لا يوجد طلاب مرتبطين بهذه الدورة بعد.</td>
+                        </tr>
                         @endforelse
                     </tbody>
                 </table>

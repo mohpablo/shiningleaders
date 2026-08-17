@@ -21,6 +21,32 @@
             </div>
 
             <div class="grid gap-6 sm:grid-cols-2">
+                <!-- Grade Selection -->
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-midnight">الصف الدراسي</label>
+                    <select name="grade" class="w-full rounded-3xl border border-sand bg-sand/60 px-4 py-3 text-right text-midnight outline-none focus:border-midnight" required>
+                        <option value="" disabled {{ old('grade') ? '' : 'selected' }}>-- اختر الصف الدراسي --</option>
+                        @foreach($grades as $grade)
+                        <option value="{{ $grade }}" {{ old('grade') == $grade ? 'selected' : '' }}>{{ $grade }}</option>
+                        @endforeach
+                    </select>
+                    @error('grade')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                </div>
+
+                <!-- Teacher Selection -->
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-midnight">المعلم</label>
+                    <select name="teacher_id" class="w-full rounded-3xl border border-sand bg-sand/60 px-4 py-3 text-right text-midnight outline-none focus:border-midnight" required>
+                        <option value="" disabled {{ old('teacher_id') ? '' : 'selected' }}>-- اختر المعلم --</option>
+                        @foreach($teachers as $teacher)
+                        <option value="{{ $teacher->id }}" {{ old('teacher_id') == $teacher->id ? 'selected' : '' }}>
+                            {{ $teacher->name }}
+                        </option>
+                        @endforeach
+                    </select>
+                    @error('teacher_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                </div>
+
                 <div>
                     <label class="mb-2 block text-sm font-semibold text-midnight">الرسوم الشهرية</label>
                     <input type="number" step="0.01" min="0" name="monthly_fee" value="{{ old('monthly_fee') }}" class="w-full rounded-3xl border border-sand bg-sand/60 px-4 py-3 text-right text-midnight outline-none focus:border-midnight" required>
@@ -31,17 +57,6 @@
                     <label class="mb-2 block text-sm font-semibold text-midnight">عدد الجلسات في الشهر</label>
                     <input type="number" min="1" name="monthly_sessions" value="{{ old('monthly_sessions', 8) }}" class="w-full rounded-3xl border border-sand bg-sand/60 px-4 py-3 text-right text-midnight outline-none focus:border-midnight" required>
                     @error('monthly_sessions')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                </div>
-
-                <div>
-                    <label class="mb-2 block text-sm font-semibold text-midnight">المعلم</label>
-                    <select name="teacher_id" class="w-full rounded-3xl border border-sand bg-sand/60 px-4 py-3 text-right text-midnight outline-none focus:border-midnight">
-                        <option value="">بدون معلم</option>
-                        @foreach($teachers as $teacher)
-                            <option value="{{ $teacher->id }}" {{ old('teacher_id') == $teacher->id ? 'selected' : '' }}>{{ $teacher->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('teacher_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                 </div>
             </div>
 

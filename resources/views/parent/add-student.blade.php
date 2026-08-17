@@ -1,14 +1,14 @@
-<x-app title="إضافة ابن جديد">
+<x-app title="إضافة ابن جديد - الخطوة 1">
     <div class="max-w-2xl mx-auto space-y-8">
         <!-- Header -->
         <div class="border-b-4 border-midnight pb-4">
-            <h2 class="text-3xl font-heading font-bold">إضافة طالب/ابن جديد</h2>
-            <p class="text-terracotta font-bold mt-1">الرجاء إدخال بيانات الطالب بدقة</p>
+            <h2 class="text-3xl font-heading font-bold">إضافة طالب/ابن جديد (الخطوة 1 من 2)</h2>
+            <p class="text-terracotta font-bold mt-1">الرجاء إدخال البيانات الأساسية للطالب</p>
         </div>
 
         <!-- Form Card -->
         <div class="bg-sand border-2 border-midnight p-8 shadow-[8px_8px_0px_0px_#0B132B]">
-            <form action="{{ route('parent.add-student') }}" method="POST" class="space-y-6">
+            <form action="{{ route('store-student') }}" method="POST" class="space-y-6">
                 @csrf
 
                 <!-- Name -->
@@ -54,33 +54,20 @@
                     </div>
 
                     <div>
-                        <label for="academic_year" class="block font-bold mb-2">السنة الدراسية</label>
-                        <input type="text" id="academic_year" name="academic_year" value="{{ old('academic_year') }}"
+                        <label for="academic_year" class="block font-bold mb-2">السنة الدراسية (الصف)</label>
+                        <select id="academic_year" name="academic_year" required
                             class="w-full bg-sand border-2 border-midnight p-3 focus:outline-none focus:ring-2 focus:ring-terracotta font-medium">
+                            <option value="" disabled {{ old('academic_year') ? '' : 'selected' }}>-- اختر السنة الدراسية --</option>
+                            @foreach($academicYears as $year)
+                            <option value="{{ $year }}" {{ old('academic_year') == $year ? 'selected' : '' }}>
+                                {{ $year }}
+                            </option>
+                            @endforeach
+                        </select>
                         @error('academic_year')
                         <span class="text-terracotta text-sm font-bold mt-1 block">{{ $message }}</span>
                         @enderror
                     </div>
-                </div>
-
-                <!-- Courses Selection Checkboxes -->
-                <div>
-                    <label class="block font-bold mb-3">الكورسات المراد التسجيل بها</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        @foreach($courses as $course)
-                        <label class="flex items-center space-x-3 space-x-reverse bg-sand border-2 border-midnight p-3 cursor-pointer hover:bg-midnight/5 transition">
-                            <input type="checkbox"
-                                name="courses[]"
-                                value="{{ $course->id }}"
-                                {{ is_array(old('courses')) && in_array($course->id, old('courses')) ? 'checked' : '' }}
-                                class="w-5 h-5 text-midnight border-2 border-midnight focus:ring-terracotta">
-                            <span class="font-bold text-midnight">{{ $course->name }}</span>
-                        </label>
-                        @endforeach
-                    </div>
-                    @error('courses')
-                    <span class="text-terracotta text-sm font-bold mt-1 block">{{ $message }}</span>
-                    @enderror
                 </div>
 
                 <!-- Form Actions -->
@@ -91,7 +78,7 @@
                     </a>
                     <button type="submit"
                         class="bg-midnight text-sand px-8 py-3 font-bold border-2 border-midnight shadow-[4px_4px_0px_0px_#D97706] hover:bg-terracotta hover:text-white transition-all">
-                        حفظ البيانات
+                        التالي: اختيار الكورسات ←
                     </button>
                 </div>
             </form>
