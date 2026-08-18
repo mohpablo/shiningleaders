@@ -46,8 +46,8 @@ class StudentController extends Controller
         $validated = $request->validate([
             'name'          => ['required', 'string', 'max:255'],
             'age'           => ['required', 'integer', 'min:1', 'max:30'],
-            'phone_number'  => ['nullable', 'string', 'max:20'],
-            'school'        => ['nullable', 'string', 'max:255'],
+            'phone_number'  => ['required', 'string', 'max:20'],
+            'school'        => ['required', 'string', 'max:255'],
             'academic_year' => ['required', 'string', 'max:255'],
         ]);
 
