@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@600;700&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 
+    @include('partials.lang-boot')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -29,9 +30,13 @@
                 </div>
             </a>
 
-            <a href="{{ url('/') }}" class="text-sm font-bold text-midnight hover:text-terracotta underline decoration-2">
-                ← العودة للموقع
-            </a>
+            <div class="flex items-center gap-3">
+                @include('partials.lang-switcher')
+
+                <a href="{{ url('/') }}" class="text-sm font-bold text-midnight hover:text-terracotta underline decoration-2">
+                    ← العودة للموقع
+                </a>
+            </div>
         </div>
     </header>
 
