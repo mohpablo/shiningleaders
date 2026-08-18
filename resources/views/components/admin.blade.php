@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@600;700&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 
+    @include('partials.lang-boot')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
@@ -99,6 +100,7 @@
                     </button>
                     <h1 class="text-xl font-bold font-heading">مرحباً بالمسؤول، {{ auth()->user()->name ?? 'الأدمن' }}</h1>
                 </div>
+                @include('partials.lang-switcher')
             </header>
 
             <!-- Page Content -->

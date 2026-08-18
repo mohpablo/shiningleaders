@@ -11,6 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@600;700&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 
+    @include('partials.lang-boot')
+
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -42,6 +44,8 @@
 
 
             <div class="flex items-center gap-3">
+
+                @include('partials.lang-switcher')
 
                 <a href="/login" class="bg-white hover:bg-slate-100 text-midnight px-4 py-2 text-sm font-bold border-2 border-midnight transition-colors shadow-[3px_3px_0px_0px_#0B132B]">
                     تسجيل الدخول

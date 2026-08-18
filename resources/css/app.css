@@ -29,6 +29,43 @@ h3,
     font-family: var(--font-heading);
 }
 
+/* English (LTR) adjustments for the RTL-first layout */
+html[dir="ltr"] body {
+    font-family:
+        "Segoe UI",
+        system-ui,
+        -apple-system,
+        sans-serif;
+}
+
+html[dir="ltr"] aside.fixed {
+    right: auto;
+    left: 0;
+    border-left-width: 0;
+    border-right-width: 2px;
+    box-shadow: -10px 0 0 0 var(--color-terracotta);
+}
+
+html[dir="ltr"] aside.fixed.translate-x-full {
+    translate: -100% 0;
+    transform: translateX(-100%);
+}
+
+@media (min-width: 768px) {
+    html[dir="ltr"] aside.fixed.translate-x-full {
+        translate: 0 0;
+        transform: none;
+    }
+}
+
+html[dir="ltr"] .text-right {
+    text-align: left;
+}
+
+html[dir="ltr"] .text-left {
+    text-align: right;
+}
+
 /* Accessibility focus outline */
 a:focus-visible,
 button:focus-visible {
