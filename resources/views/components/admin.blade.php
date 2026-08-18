@@ -40,8 +40,8 @@
         </div>
 
         <!-- Sidebar -->
-        <aside :class="sidebarOpen ? 'translate-x-0' : 'translate-x-full'"
-            class="fixed top-0 right-0 z-50 h-full w-72 bg-midnight text-sand transition-transform duration-300 ease-in-out md:sticky md:translate-x-0 flex flex-col border-l-2 border-midnight shadow-[10px_0px_0px_0px_#D97706]">
+      <aside :class="sidebarOpen ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full'"
+            class="fixed top-0 ltr:left-0 rtl:right-0 z-50 h-full w-72 bg-midnight text-sand transition-transform duration-300 ease-in-out md:sticky md:!translate-x-0 flex flex-col ltr:border-r-2 rtl:border-l-2 border-midnight shadow-[10px_0px_0px_0px_#D97706]">
 
             <div class="p-6 border-b-2 border-midnight flex justify-between items-center">
                 <div class="flex flex-col">
