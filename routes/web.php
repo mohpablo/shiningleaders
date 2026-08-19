@@ -25,6 +25,9 @@ Route::middleware(['auth', 'role:parent'])->group(function () {
     // Step 2: Select Courses for Student
     Route::get('/students/{student}/select-courses', [StudentController::class, 'selectCourses'])->name('select-courses');
     Route::post('/students/{student}/select-courses', [StudentController::class, 'storeCourses'])->name('store-courses');;
+    // في ملف Routes (مثلاً web.php)
+    Route::post('/student/{student}/course/add', [StudentController::class, 'addCourse'])->name('parent.student.course.add');
+    Route::delete('/student/{student}/course/{course}/remove', [StudentController::class, 'removeCourse'])->name('parent.student.course.remove');
 
     Route::get('/parent/courses', [ParentController::class, 'courses'])->name('parent.courses');
     Route::get('/parent/payments', [ParentController::class, 'payments'])->name('parent.payments');

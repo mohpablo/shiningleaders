@@ -42,7 +42,6 @@
                 <a href="#community" class="hover:text-terracotta transition-colors">مجتمعنا</a>
             </nav>
 
-
             <div class="flex items-center gap-3">
 
                 @include('partials.lang-switcher')
@@ -67,17 +66,16 @@
                     <!-- Text Block -->
                     <div class="lg:col-span-7 space-y-8">
                         <div class="inline-block bg-terracotta text-white font-bold text-xs px-3 py-1 border border-midnight">
-                            للأطفال والناشئة من 4 إلى 16 سنة
+                            من 4 إلى 16 سنة
                         </div>
 
                         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight text-midnight">
-                            <!-- أحنا مش سنتر درس... <br> -->
-                            <span class="text-forest underline decoration-terracotta underline-offset-8">احنا مجتمع يَبني انسان متكامل</span>
+                            <span class="text-forest underline decoration-terracotta underline-offset-8">إحنا مجتمع هدفه بناء جيل واعٍ، مبدع، وذو قيم</span>
                         </h1>
 
                         <p class="text-lg sm:text-xl font-medium text-midnight/80 leading-relaxed max-w-2xl">
-                            الشعار: <strong class="text-terracotta font-heading font-bold">نتعلم.. نبدع.. نرتقي</strong>.<br>
-                            الأهالي عندنا مش بتشتري درس، الأهالي بتشتري بيئة آمنة، قيم، مهارات، وصحبة صالحة.
+                            الشعار: <strong class="text-terracotta font-heading font-bold">هنا يبدأ التعلم… ويبدأ معه بناء الإنسان</strong>.<br>
+                            لأننا نؤمن أن التعليم الحقيقي لا يقتصر على الدروس ، بل يمتد إلى بناء القيم ، وتنمية المهارات ، وصناعة صحبة صالحة 
                         </p>
 
                         <div class="pt-4 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
@@ -120,7 +118,7 @@
                                 </li>
                                 <li class="flex items-start gap-3">
                                     <span class="w-3 h-3 bg-amber-400 border border-midnight mt-1 shrink-0"></span>
-                                    <span><strong>الأنشطة والأعمال اليدوية:</strong> مكرمية، رسم، ونجارة للأطفال.</span>
+                                    <span><strong>الأنشطة والأعمال اليدوية:</strong> مكرمية، رسم، ونجارة للطلاب.</span>
                                 </li>
                             </ul>
                         </div>
@@ -146,7 +144,7 @@
                         <span class="text-xs font-bold text-terracotta uppercase tracking-widest">الواجب اليومي</span>
                         <h2 class="text-3xl font-heading font-bold text-white mt-2 mb-4">الرسالة</h2>
                         <p class="text-lg leading-relaxed text-sand/90 font-medium">
-                            تقديم بيئة تعليمية آمنة وممتعة للأطفال من سن (4 إلى 16 سنة)، تجمع بين التعليم الدراسي، التربية الإسلامية، المهارات الشخصية، الأنشطة الفنية، وتنمية المواهب لبناء شخصية الطفل.
+                            تقديم بيئة تعليمية آمنة وممتعة للطلاب من سن (4 إلى 16 سنة)، تجمع بين التعليم الدراسي، التربية الإسلامية، المهارات الشخصية، الأنشطة الفنية، وتنمية المواهب لبناء شخصية الطالب.
                         </p>
                     </div>
                 </div>
@@ -239,7 +237,7 @@
                                 <li>• رسم على الزجاج والقماش</li>
                                 <li>• مكرمية وسجاد خيوط الكليم</li>
                                 <li>• حقائب يدوية وميداليات</li>
-                                <li>• أعمال خشب ونجارة للأطفال</li>
+                                <li>• أعمال خشب ونجارة للطلاب</li>
                             </ul>
                         </div>
                     </div>
@@ -252,10 +250,10 @@
             <div class="max-w-7xl mx-auto px-6">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                     <div class="lg:col-span-6 space-y-6">
-                        <span class="text-xs font-mono text-terracotta uppercase tracking-widest">بدل ما الطفل يروح مكان يضيع وقته</span>
-                        <h2 class="text-3xl sm:text-4xl font-heading font-bold text-white">مجتمع متكامل يبني شخصية الطفل</h2>
+                        <span class="text-xs font-mono text-terracotta uppercase tracking-widest">بدل ما الطالب يروح مكان يضيع وقته</span>
+                        <h2 class="text-3xl sm:text-4xl font-heading font-bold text-white">مجتمع متكامل يبني شخصية الطالب</h2>
                         <p class="text-sand/80 leading-relaxed font-medium">
-                            في أكاديمية Shining Leaders، لا نقدم دروسًا فردية مجزأة، بل ندمج الطفل في مجتمع إيجابي يتلقى فيه الرعاية الشاملة:
+                            في أكاديمية Shining Leaders، لا نقدم دروسًا فردية مجزأة، بل ندمج الطالب في مجتمع إيجابي يتلقى فيه الرعاية الشاملة:
                         </p>
                         <div class="grid grid-cols-2 gap-4 pt-2 font-bold text-sm">
                             <div class="p-3 border border-sand/20 bg-clay">• صحبة محترمة</div>
@@ -269,7 +267,7 @@
 
                     <div class="lg:col-span-6">
                         <div class="border-2 border-sand p-8 bg-sand text-midnight shadow-[10px_10px_0px_0px_#D97706]">
-                            <h3 class="text-2xl font-heading font-bold mb-4 text-midnight">احجز مكاناً لطفلك اليوم</h3>
+                            <h3 class="text-2xl font-heading font-bold mb-4 text-midnight">احجز مكاناً لطالبك اليوم</h3>
                             <p class="text-sm font-medium text-midnight/80 mb-6">
                                 انضم إلى العائلات التي اختارت استثمار المستقبل في أبنائها. سجل معنا أو تواصل عبر الفيسبوك.
                             </p>
@@ -277,7 +275,6 @@
                             <a href="{{ route('register') }}" class="block w-full bg-terracotta hover:bg-amber-700 text-white font-bold text-center py-4 border-2 border-midnight shadow-[4px_4px_0px_0px_#0B132B] transition-all mb-3">
                                 إنشاء حساب جديد وتأكيد الحجز
                             </a>
-
 
                             <a href="https://www.facebook.com/share/18gaCNmSHy/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" class="block w-full bg-white hover:bg-slate-100 text-midnight font-bold text-center py-3 border-2 border-midnight transition-all">
                                 الانتقال لصفحة الفيسبوك الرسمية

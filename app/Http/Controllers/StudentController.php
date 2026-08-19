@@ -91,4 +91,28 @@ class StudentController extends Controller
 
         return redirect()->route('parent.dashboard')->with('success', 'تم إضافة الطالب وتحديد الكورسات بنجاح');
     }
+
+    public function addCourse(Request $request, Student $student)
+    {
+        // التحقق من صحة البيانات
+        $request->validate([
+            'course_id' => 'required|exists:courses,id'
+        ]);
+
+        // إضافة الدورة للطالب دون تكرار في جدول الربط (course_student)
+        $student->courses()->syncWithoutDetaching([$request->course_id]);
+
+        return back()->with('success', 'تمت إضافة الدورة للطالب بنجاح.');
+    }
+
+    /**
+     * إزالة الدورة من الطالب
+     */
+    public function removeCourse(Student $student, Course $course)
+    {
+        // إزالة الدورة من جدول الربط
+        $student->courses()->detach($course->id);
+
+        return back()->with('success', 'تمت إزالة الدورة من سجل الطالب بنجاح.');
+    }
 }
