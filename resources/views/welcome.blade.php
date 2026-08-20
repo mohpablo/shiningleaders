@@ -74,8 +74,8 @@
                         </h1>
 
                         <p class="text-lg sm:text-xl font-medium text-midnight/80 leading-relaxed max-w-2xl">
-                            الشعار: <strong class="text-terracotta font-heading font-bold">هنا يبدأ التعلم… ويبدأ معه بناء الإنسان</strong>.<br>
                             لأننا نؤمن أن التعليم الحقيقي لا يقتصر على الدروس ، بل يمتد إلى بناء القيم ، وتنمية المهارات ، وصناعة صحبة صالحة 
+                            شعارنا: <strong class="text-terracotta font-heading font-bold">هنا يبدأ التعلم… ويبدأ معه بناء الإنسان</strong>.<br>
                         </p>
 
                         <div class="pt-4 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">

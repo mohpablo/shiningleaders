@@ -14,34 +14,51 @@ const normalize = (value) => value.replace(TASHKEEL, '').replace(/\s+/g, ' ').tr
 
 const table = new Map();
 for (const [arabic, english] of Object.entries(dictionary)) {
-    table.set(normalize(arabic), english);
+    // تخطي النصوص الطويلة جداً من الـ Regex العشوائي لمنع تعليق المتصفح، ومعالجتها كـ مطابقة تامة فقط (Exact Match)
+    if (arabic.length < 150) {
+        table.set(normalize(arabic), english);
+    }
+}
+
+// تخزين النصوص الطويلة جداً منفصلة للمطابقة التامة (Exact Match) فقط لضمان السرعة
+const exactTable = new Map();
+for (const [arabic, english] of Object.entries(dictionary)) {
+    if (arabic.length >= 150) {
+        exactTable.set(normalize(arabic), english);
+    }
 }
 
 const phrases = [...table.keys()].sort((a, b) => b.length - a.length);
-const phrasePattern = new RegExp(
+const phrasePattern = phrases.length > 0 ? new RegExp(
     phrases.map((phrase) => phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
     'g'
-);
+) : null;
 
 const originals = new WeakMap();
 let currentLang = 'ar';
 let observer = null;
 
 function translate(value) {
+    if (!value) return null;
     const normalized = normalize(value);
     if (!normalized) return null;
 
-    const exact = table.get(normalized);
-    if (exact !== undefined) {
-        const [, leading, , trailing] = value.match(/^(\s*)([\s\S]*?)(\s*)$/);
-        return `${leading}${exact}${trailing}`;
-    }
+    // 1. التحقق من المطابقة التامة أولاً (تنفع جداً للنصوص الكبيرة مثل الشروط)
+    if (table.has(normalized)) return table.get(normalized);
+    if (exactTable.has(normalized)) return exactTable.get(normalized);
+
+    if (!phrasePattern) return null;
+
+    const matchResult = value.match(/^(\s*)([\s\S]*?)(\s*)$/);
+    const leading = matchResult ? matchResult[1] : '';
+    const trailing = matchResult ? matchResult[3] : '';
 
     phrasePattern.lastIndex = 0;
     if (!phrasePattern.test(normalized)) return null;
     phrasePattern.lastIndex = 0;
 
-    return normalized.replace(phrasePattern, (match) => table.get(match) ?? match);
+    const replaced = normalized.replace(phrasePattern, (match) => table.get(match) ?? match);
+    return `${leading}${replaced}${trailing}`;
 }
 
 function isSkipped(node) {
@@ -132,16 +149,25 @@ function applyLanguage(lang) {
     currentLang = LANGS.includes(lang) ? lang : 'ar';
     localStorage.setItem(STORAGE_KEY, currentLang);
 
+    // إيقاف المراقب مؤقتاً أثناء التعديل لمنع حدوث حلقة لا نهائية وتجمد الصفحة
     if (observer) observer.disconnect();
+
     updateDocumentAttributes(currentLang);
     walk(document.body, currentLang);
     updateToggleLabels(currentLang);
-    if (observer) observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+
+    // إعادة تفعيل المراقب بعد الانتهاء من التعديلات
+    if (observer) {
+        observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    }
 }
 
 function watchDynamicContent() {
     observer = new MutationObserver((mutations) => {
         if (currentLang === 'ar') return;
+
+        // إيقاف مؤقت داخل الـ Observer لمنع التكرار اللانهائي
+        observer.disconnect();
 
         for (const mutation of mutations) {
             if (mutation.type === 'characterData') {
@@ -150,6 +176,9 @@ function watchDynamicContent() {
             }
             mutation.addedNodes.forEach((node) => walk(node, currentLang));
         }
+
+        // استئناف المراقبة
+        observer.observe(document.body, { childList: true, subtree: true, characterData: true });
     });
 
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });

@@ -90,4 +90,5 @@ class AuthController extends Controller
         auth()->guard()->logout();
         return redirect('/');
     }
+    
 }

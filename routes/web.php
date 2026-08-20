@@ -29,11 +29,11 @@ Route::middleware(['auth', 'role:parent'])->group(function () {
     Route::post('/student/{student}/course/add', [StudentController::class, 'addCourse'])->name('parent.student.course.add');
     Route::delete('/student/{student}/course/{course}/remove', [StudentController::class, 'removeCourse'])->name('parent.student.course.remove');
 
+    Route::get('/parent/students/{student}', [ParentController::class, 'show'])->name('parent.student.show');
     Route::get('/parent/courses', [ParentController::class, 'courses'])->name('parent.courses');
     Route::get('/parent/payments', [ParentController::class, 'payments'])->name('parent.payments');
     Route::view('/parent/settings', 'parent.settings')->name('parent.settings');
 
-    Route::get('/parent/students/{student}', [ParentController::class, 'show'])->name('parent.student.show');
     Route::post('/parent/students/{student}/subscribe', [ParentController::class, 'subscribe'])->name('parent.student.subscribe');
     Route::get('/parent/students/{student}/subscriptions/{subscription}/checkout', [ParentController::class, 'checkout'])->name('parent.student.subscription.checkout');
 });
