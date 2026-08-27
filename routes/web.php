@@ -50,7 +50,8 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('payments', [AdminController::class, 'payments'])->name('payments.index');
-    Route::patch('payments/{payment}/paid', [AdminController::class, 'markPaymentAsPaid'])->name('payments.paid');
+    Route::patch('payments/{student}/{course}/paid', [AdminController::class, 'markStudentCourseAsPaid'])->name('payments.paid');
+    Route::patch('payments/{student}/{course}/unpaid', [AdminController::class, 'markStudentCourseAsUnpaid'])->name('payments.unpaid');
     Route::get('/students', [StudentController::class, 'index'])->name('students.index');
     Route::get('courses', [\App\Http\Controllers\AdminCourseController::class, 'index'])->name('course');
     Route::get('courses/create', [\App\Http\Controllers\AdminCourseController::class, 'create'])->name('course.create');
