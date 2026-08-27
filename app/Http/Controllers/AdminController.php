@@ -8,6 +8,7 @@ use App\Models\payment;
 use App\Models\Student;
 use App\Models\subscription;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 
 class AdminController extends Controller
 {
@@ -44,5 +45,26 @@ class AdminController extends Controller
             'totalPayments',
             'latestGroups'
         ));
+    }
+
+    public function payments()
+    {
+        $payments = payment::with(['subscription.student', 'subscription.parent', 'subscription.course'])
+            ->latest()
+            ->paginate(15);
+
+        return view('admin.payments', compact('payments'));
+    }
+
+    public function markPaymentAsPaid(payment $payment): RedirectResponse
+    {
+        $payment->update([
+            'status' => 'success',
+            'failure_reason' => null,
+        ]);
+
+        $payment->subscription()->update(['status' => 'active']);
+
+        return back()->with('success', 'تم تسجيل الدفع وتفعيل الاشتراك.');
     }
 }

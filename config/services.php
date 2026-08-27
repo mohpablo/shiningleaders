@@ -35,15 +35,4 @@ return [
         ],
     ],
 
-    'paymob' => [
-        'mode' => env('PAYMOB_MODE', 'test'),
-        'api_key' => env('PAYMOB_API_KEY'),
-        'integration_id' => env('PAYMOB_INTEGRATION_ID'),
-        'iframe_id' => env('PAYMOB_IFRAME_ID'),
-        'merchant_id' => env('PAYMOB_MERCHANT_ID'),
-        'currency' => env('PAYMOB_CURRENCY', 'EGP'),
-        'callback_url' => env('PAYMOB_CALLBACK_URL'),
-        'redirect_url' => env('PAYMOB_REDIRECT_URL'),
-    ],
-
 ];

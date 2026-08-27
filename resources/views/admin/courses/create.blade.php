@@ -2,7 +2,7 @@
     <div class="max-w-3xl space-y-6 rounded-3xl bg-white p-8 shadow-xl border border-sand">
         <div>
             <h1 class="text-3xl font-bold text-midnight">إنشاء دورة جديدة</h1>
-            <p class="mt-2 text-sm text-midnight/70">حدد اسم الدورة، الرسوم الشهرية، والمدرس المسؤول.</p>
+            <p class="mt-2 text-sm text-midnight/70">حدد اسم الدورة والرسوم الشهرية. يتم اختيار المعلم عند إنشاء المجموعة.</p>
         </div>
 
         <form action="{{ route('admin.course.store') }}" method="POST" class="space-y-6">
@@ -31,20 +31,6 @@
                         @endforeach
                     </select>
                     @error('grade')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                </div>
-
-                <!-- Teacher Selection -->
-                <div>
-                    <label class="mb-2 block text-sm font-semibold text-midnight">المعلم</label>
-                    <select name="teacher_id" class="w-full rounded-3xl border border-sand bg-sand/60 px-4 py-3 text-right text-midnight outline-none focus:border-midnight" required>
-                        <option value="" disabled {{ old('teacher_id') ? '' : 'selected' }}>-- اختر المعلم --</option>
-                        @foreach($teachers as $teacher)
-                        <option value="{{ $teacher->id }}" {{ old('teacher_id') == $teacher->id ? 'selected' : '' }}>
-                            {{ $teacher->name }}
-                        </option>
-                        @endforeach
-                    </select>
-                    @error('teacher_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                 </div>
 
                 <div>

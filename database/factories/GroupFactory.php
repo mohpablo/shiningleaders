@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Group;
 use App\Models\Course;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,6 +18,7 @@ class GroupFactory extends Factory
     {
         return [
             'course_id' => Course::factory(),
+            'teacher_id' => User::factory()->state(['role' => 'teacher']),
             'name' => fake()->randomElement(['مجموعة أ', 'مجموعة ب', 'مجموعة ج', 'مجموعة د']),
             'schedule' => fake()->randomElement(['الاثنين والأربعاء 5-7 مساءً', 'الثلاثاء والخميس 4-6 مساءً', 'الجمعة 10-12 صباحاً']),
             'capacity' => fake()->numberBetween(10, 24),

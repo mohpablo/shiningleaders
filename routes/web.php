@@ -47,10 +47,10 @@ Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')
     Route::post('/courses/{course}/groups/{group}/students/{student}/mark', [TeacherController::class, 'markStudent'])->name('courses.groups.students.mark');
 });
 
-Route::post('/paymob/callback', [\App\Http\Controllers\PaymobController::class, 'callback'])->name('paymob.callback');
-
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('payments', [AdminController::class, 'payments'])->name('payments.index');
+    Route::patch('payments/{payment}/paid', [AdminController::class, 'markPaymentAsPaid'])->name('payments.paid');
     Route::get('/students', [StudentController::class, 'index'])->name('students.index');
     Route::get('courses', [\App\Http\Controllers\AdminCourseController::class, 'index'])->name('course');
     Route::get('courses/create', [\App\Http\Controllers\AdminCourseController::class, 'create'])->name('course.create');
@@ -60,6 +60,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::delete('courses/{course}', [\App\Http\Controllers\AdminCourseController::class, 'destroy'])->name('course.destroy');
 
     Route::post('courses/{course}/groups', [\App\Http\Controllers\AdminCourseController::class, 'storeGroup'])->name('course.groups.store');
+    Route::patch('courses/{course}/groups/{group}', [\App\Http\Controllers\AdminCourseController::class, 'updateGroup'])->name('course.groups.update');
     Route::delete('courses/{course}/groups/{group}', [\App\Http\Controllers\AdminCourseController::class, 'destroyGroup'])->name('course.groups.destroy');
 
     Route::get('parents', [\App\Http\Controllers\AdminParentController::class, 'index'])->name('parents.index');

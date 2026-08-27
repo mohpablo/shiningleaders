@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['subscription_id', 'amount', 'paymob_order_id', 'paymob_transaction_id', 'status', 'failure_reason'])]
+#[Fillable(['subscription_id', 'amount', 'status', 'failure_reason'])]
 class payment extends Model
 {
     /** @use HasFactory<PaymentFactory> */

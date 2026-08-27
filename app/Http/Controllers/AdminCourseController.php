@@ -6,13 +6,13 @@ use App\Models\Course;
 use App\Models\Group;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class AdminCourseController extends Controller
 {
     public function index()
     {
-        $courses = Course::with('teacher')
-            ->withCount(['groups', 'subscriptions as students_count'])
+        $courses = Course::withCount(['groups', 'subscriptions as students_count'])
             ->latest()
             ->paginate(10);
 
@@ -21,8 +21,6 @@ class AdminCourseController extends Controller
 
     public function create()
     {
-        $teachers = User::where('role', 'teacher')->get();
-
         // Define the grades to match what the parents see
         $grades = [
             'Pre-KG',
@@ -40,7 +38,7 @@ class AdminCourseController extends Controller
             'Grade 10'
         ];
 
-        return view('admin.courses.create', compact('teachers', 'grades'));
+        return view('admin.courses.create', compact('grades'));
     }
 
     public function store(Request $request)
@@ -50,7 +48,6 @@ class AdminCourseController extends Controller
             'description' => ['nullable', 'string'],
             'grade' => ['required', 'string', 'max:255'], // Added grade validation
             'monthly_fee' => ['required', 'numeric', 'min:0'],
-            'teacher_id' => ['required', 'exists:users,id'],
             'monthly_sessions' => ['required', 'integer', 'min:1', 'max:100'],
         ]);
 
@@ -62,7 +59,6 @@ class AdminCourseController extends Controller
     public function edit(Course $course)
     {
         $teachers = User::where('role', 'teacher')->get();
-
         $students = $course->subscriptions()->with('student')->get()->pluck('student')->unique('id');
 
         // مصفوفة الصفوف الدراسية
@@ -92,7 +88,6 @@ class AdminCourseController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'monthly_fee' => ['required', 'numeric', 'min:0'],
-            'teacher_id' => ['required', 'exists:users,id'],
             'grade' => ['required', 'string', 'max:255'], // Added grade validation
             'monthly_sessions' => ['required', 'integer', 'min:1', 'max:100'],
         ]);
@@ -115,11 +110,27 @@ class AdminCourseController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'schedule' => ['required', 'string', 'max:255'],
             'capacity' => ['nullable', 'integer', 'min:1'],
+            'teacher_id' => ['required', Rule::exists('users', 'id')->where(fn($query) => $query->where('role', 'teacher'))],
         ]);
 
         $course->groups()->create($validated);
 
         return back()->with('success', 'تم إنشاء المجموعة بنجاح.');
+    }
+
+    public function updateGroup(Request $request, Course $course, Group $group)
+    {
+        if ($group->course_id !== $course->id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'teacher_id' => ['required', Rule::exists('users', 'id')->where(fn($query) => $query->where('role', 'teacher'))],
+        ]);
+
+        $group->update($validated);
+
+        return back()->with('success', 'تم تحديث معلم المجموعة بنجاح.');
     }
 
     public function destroyGroup(Course $course, Group $group)

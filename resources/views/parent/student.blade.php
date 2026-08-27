@@ -110,7 +110,6 @@
                     <div class="rounded-2xl border border-sand bg-white shadow-sm hover:shadow-md transition p-5 flex flex-col justify-between h-full">
                         <div>
                             <h4 class="text-lg md:text-xl font-bold text-midnight break-words">{{ $course->name }}</h4>
-                            <p class="mt-2 text-xs md:text-sm text-midnight/70">المعلم: <span class="font-semibold text-midnight">{{ $course->teacher?->name ?? 'غير محدد' }}</span></p>
                         </div>
 
                         <div class="mt-6 space-y-3 pt-4 border-t border-sand/40">

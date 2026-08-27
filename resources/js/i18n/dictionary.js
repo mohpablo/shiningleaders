@@ -166,18 +166,29 @@ export default {
     "رقم الهاتف / الواتساب": "Phone / WhatsApp Number",
     // Terms and Conditions
     "شروط وقواعد الأكاديمية": "Academy Terms and Rules",
-    "سادة أولياء الأمور الأعزاء، نحن ندرك المسؤولية الغالية التي وضعتموها في أعناقنا، وفي أكاديميتنا نحن نقدر ثقتكم ونعمل بكل جهد لنكون على قدر هذه الثقة، وحيث أنكم اخترتم أن تتركوا أبناءكم بين أيدينا، ومن منطلق حرصنا المشترك على مصلحة الطلاب، وتوفير بيئة تعليمية وتربوية آمنة ومنظمة، نرجو منكم الاطلاع على القواعد التالية والالتزام بها، لما فيه من خير للجميع.": "Dear parents, we realize the precious responsibility you have placed upon us. In our academy, we appreciate your trust and work hard to be worthy of it. Since you have chosen to leave your children in our hands, and from our shared keenness on the students' best interests and providing a safe and organized educational environment, we kindly ask you to review and adhere to the following rules for the common good.",
+    "سادة أولياء الأمور الأعزاء، نحن ندرك المسؤولية الغالية التي وضعتموها في أعناقنا، وفي أكاديميتنا نحن نقدر ثقتكم ونعمل بكل جهد لنكون على قدر هذه الثقة، وحيث أنكم اخترتم أن تتركوا أبناءكم بين أيدينا، ومن منطلق حرصنا المشترك على مصلحة الطلاب، وتوفير بيئة تعليمية وتربوية آمنة ومنظمة، نرجو منكم الاطلاع على القواعد التالية والالتزام بها، لما فيه من خير للجميع.":
+        "Dear parents, we realize the precious responsibility you have placed upon us. In our academy, we appreciate your trust and work hard to be worthy of it. Since you have chosen to leave your children in our hands, and from our shared keenness on the students' best interests and providing a safe and organized educational environment, we kindly ask you to review and adhere to the following rules for the common good.",
     "يرجى مراعاة الآتي:": "Please observe the following:",
-    "الالتزام بقواعد المكان وهي في حال تواجد الطالب في الأكاديمية.": "Adherence to venue rules while the student is present at the academy.",
-    "الحضور في الميعاد المحدد للكورس.": "Attending at the specified course time.",
-    "إبلاغ الإدارة مسبقاً في حال الغياب.": "Notifying management in advance in case of absence.",
-    "الغياب مرتين بدون عذر وبعدها لا يكون مسموح للطالب بالدخول ويتم منح مكانه لطالب آخر.": "Absence twice without an excuse, after which the student is no longer allowed entry and their spot is given to another student.",
-    "في حالة إلغاء الحصة من جهة الأكاديمية سوف يتم تعويض الحصة في يوم يتناسب مع الطالب، ولو لم نستطع توفيق ميعاد يتناسب مع الطالب لن نقوم بحساب الحصة.": "In case a class is cancelled by the academy, it will be compensated on a day that suits the student. If we cannot match a suitable time for the student, the class will not be charged.",
-    "في حالة الغياب من جهة الطالب وفي حالة طلب التعويض (محسوبة على الطالب)، نحاول تعويض الحصة ولكن سوف يقوم ولي الأمر بدفع رسوم إضافية.": "In case of student absence and requesting compensation (charged to the student), we will try to compensate for the class, but the parent will pay additional fees.",
-    "إحضار الكتب والأدوات اللازمة للدراسة والمذاكرة.": "Bringing the necessary books and tools for study and revision.",
-    "الالتزام بتسليم الواجبات والمطلوب في الوقت المحدد.": "Adhering to submitting homework and requirements on time.",
-    "يمنع التلفظ بألفاظ غير لائقة داخل الأكاديمية ويجب احترام المعلم والمدرب والزملاء. يتم التحدث مع الطالب بطريقة مهذبة في المرة الأولى، وفي حالة تكرار السلوك يتم التحدث مع ولي الأمر، وفي حالة المخالفة مجدداً لن نستطيع استقبال الطالب.": "Using inappropriate language inside the academy is prohibited, and teachers, trainers, and peers must be respected. The student will be spoken to politely the first time; if the behavior recurs, the parent will be spoken to, and in case of further violation, we will not be able to host the student.",
-    "المحافظة على المكان ونظافته، ويتحمل الطالب تكلفة أي تلف ناتج عن التعمد.": "Maintaining the cleanliness of the place, and the student bears the cost of any damage resulting from intentional acts.",
+    "الالتزام بقواعد المكان وهي في حال تواجد الطالب في الأكاديمية.":
+        "Adherence to venue rules while the student is present at the academy.",
+    "الحضور في الميعاد المحدد للكورس.":
+        "Attending at the specified course time.",
+    "إبلاغ الإدارة مسبقاً في حال الغياب.":
+        "Notifying management in advance in case of absence.",
+    "الغياب مرتين بدون عذر وبعدها لا يكون مسموح للطالب بالدخول ويتم منح مكانه لطالب آخر.":
+        "Absence twice without an excuse, after which the student is no longer allowed entry and their spot is given to another student.",
+    "في حالة إلغاء الحصة من جهة الأكاديمية سوف يتم تعويض الحصة في يوم يتناسب مع الطالب، ولو لم نستطع توفيق ميعاد يتناسب مع الطالب لن نقوم بحساب الحصة.":
+        "In case a class is cancelled by the academy, it will be compensated on a day that suits the student. If we cannot match a suitable time for the student, the class will not be charged.",
+    "في حالة الغياب من جهة الطالب وفي حالة طلب التعويض (محسوبة على الطالب)، نحاول تعويض الحصة ولكن سوف يقوم ولي الأمر بدفع رسوم إضافية.":
+        "In case of student absence and requesting compensation (charged to the student), we will try to compensate for the class, but the parent will pay additional fees.",
+    "إحضار الكتب والأدوات اللازمة للدراسة والمذاكرة.":
+        "Bringing the necessary books and tools for study and revision.",
+    "الالتزام بتسليم الواجبات والمطلوب في الوقت المحدد.":
+        "Adhering to submitting homework and requirements on time.",
+    "يمنع التلفظ بألفاظ غير لائقة داخل الأكاديمية ويجب احترام المعلم والمدرب والزملاء. يتم التحدث مع الطالب بطريقة مهذبة في المرة الأولى، وفي حالة تكرار السلوك يتم التحدث مع ولي الأمر، وفي حالة المخالفة مجدداً لن نستطيع استقبال الطالب.":
+        "Using inappropriate language inside the academy is prohibited, and teachers, trainers, and peers must be respected. The student will be spoken to politely the first time; if the behavior recurs, the parent will be spoken to, and in case of further violation, we will not be able to host the student.",
+    "المحافظة على المكان ونظافته، ويتحمل الطالب تكلفة أي تلف ناتج عن التعمد.":
+        "Maintaining the cleanliness of the place, and the student bears the cost of any damage resulting from intentional acts.",
     "مع خالص التحية،": "With best regards,",
     "إدارة الأكاديمية Shining Leaders": "Shining Leaders Academy Management",
     // Parent area
@@ -289,17 +300,6 @@ export default {
     "الحالة المالية": "Financial Status",
     المبلغ: "Amount",
     "المبلغ المطلوب": "Amount Due",
-    "ادفع الآن (وضع التجربة)": "Pay now (test mode)",
-    "ابدأ الدفع التجريبي": "Start test payment",
-    "دفع PayMob": "PayMob Payment",
-    "دفع عبر PayMob (وضع الاختبار)": "Pay with PayMob (test mode)",
-    "سيتم تحويلك إلى صفحة الدفع التجريبي لاختبار عملية الدفع قبل الإنتاج.":
-        "You will be redirected to the test payment page to try the payment flow before going live.",
-    "تم الدفع تجريبياً": "Paid in test mode",
-    "رقم الطلب:": "Order number:",
-    "رقم المعاملة:": "Transaction number:",
-    "PAYMOB_IFRAME_ID غير مضبوط، أضف قيمته في .env ثم أعد تشغيل التطبيق.":
-        "PAYMOB_IFRAME_ID is not set. Add its value in .env and restart the application.",
     "د.إ": "AED",
     "طلاب بدون دفعة ناجحة": "Students without a successful payment",
     "طلاب دفعوا": "Students who paid",

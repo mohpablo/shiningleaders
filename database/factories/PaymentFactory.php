@@ -18,8 +18,6 @@ class PaymentFactory extends Factory
         return [
             'subscription_id' => subscription::factory(),
             'amount' => fake()->randomFloat(2, 50, 250),
-            'paymob_order_id' => fake()->uuid(),
-            'paymob_transaction_id' => fake()->uuid(),
             'status' => fake()->randomElement(['success', 'pending', 'failed']),
             'failure_reason' => null,
         ];

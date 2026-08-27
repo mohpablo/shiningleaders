@@ -27,22 +27,24 @@ class DatabaseSeeder extends Seeder
         //     'password' => 'Mariamel@123',
         //     'role' => 'admin',
         // ]);
-        // User::factory()->create([
-        //     'name' => 'Belal Ashraf',
-        //     'email' => 'Belalashraf5@gmail.com',
-        //     'password' => 'Belal@123',
-        //     'role' => 'admin',
-        // ]);
-        User::updateOrCreate(
-            // 1. Find the user by this unique column:
-            ['email' => 'Mariamelmohammady19@gmail.com'],
+        User::factory()->create([
+            'name' => 'Belal Ashraf',
+            'email' => 'Belalashraf5@gmail.com',
+            'password' => 'Belal@123',
+            'role' => 'admin',
+        ]);
+        // User::updateOrCreate(
+        //     // 1. Find the user by this unique column:
+        //     ['email' => 'Mariamelmohammady19@gmail.com'],
 
-            // 2. Update (or create) with these values:
-            [
-                'name' => 'Mariam ElMohammady',
-                // It's highly recommended to hash passwords in Laravel!
-                'password' => Hash::make('Mariamel@123'),
-            ]
-        );
+        //     // 2. Update (or create) with these values:
+        //     [
+        //         'name' => 'Mariam ElMohammady',
+        //         // It's highly recommended to hash passwords in Laravel!
+        //         'password' => Hash::make('Mariamel@123'),
+        //     ]
+        // );
+
+        $this->call(DemoDataSeeder::class);
     }
 }

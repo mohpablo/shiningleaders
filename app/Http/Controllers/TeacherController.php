@@ -15,7 +15,7 @@ class TeacherController extends Controller
     {
         $teacher = Auth::user();
 
-        $courses = $teacher->courses()
+        $courses = Course::whereHas('groups', fn($query) => $query->where('teacher_id', $teacher->id))
             ->withCount('groups')
             ->withCount(['subscriptions as students_count'])
             ->get();
@@ -35,7 +35,7 @@ class TeacherController extends Controller
 
     public function courses()
     {
-        $courses = Auth::user()->courses()
+        $courses = Course::whereHas('groups', fn($query) => $query->where('teacher_id', Auth::id()))
             ->withCount('groups')
             ->withCount(['subscriptions as students_count'])
             ->paginate(12);
@@ -47,9 +47,12 @@ class TeacherController extends Controller
     {
         $this->authorizeTeacherCourse($course);
 
-        $groups = $course->groups()->withCount('students')->get();
-        $students = Student::whereHas('subscriptions', function ($query) use ($course) {
-            $query->where('course_id', $course->id);
+        $groups = $course->groups()
+            ->where('teacher_id', Auth::id())
+            ->withCount('students')
+            ->get();
+        $students = Student::whereHas('groups', function ($query) use ($course) {
+            $query->where('course_id', $course->id)->where('teacher_id', Auth::id());
         })->with('parent')->get();
 
         return view('teacher.course', compact('course', 'groups', 'students'));
@@ -57,11 +60,7 @@ class TeacherController extends Controller
 
     public function showGroup(Course $course, Group $group)
     {
-        $this->authorizeTeacherCourse($course);
-
-        if ($group->course_id !== $course->id) {
-            abort(404);
-        }
+        $this->authorizeTeacherGroup($course, $group);
 
         $students = $group->students()->with('parent')->get();
 
@@ -70,11 +69,7 @@ class TeacherController extends Controller
 
     public function completeSession(Course $course, Group $group)
     {
-        $this->authorizeTeacherCourse($course);
-
-        if ($group->course_id !== $course->id) {
-            abort(404);
-        }
+        $this->authorizeTeacherGroup($course, $group);
 
         $group->increment('sessions_completed');
 
@@ -97,11 +92,7 @@ class TeacherController extends Controller
 
     public function markStudent(Request $request, Course $course, Group $group, Student $student)
     {
-        $this->authorizeTeacherCourse($course);
-
-        if ($group->course_id !== $course->id) {
-            abort(404);
-        }
+        $this->authorizeTeacherGroup($course, $group);
 
         if (! $group->students()->where('student_id', $student->id)->exists()) {
             abort(404);
@@ -127,7 +118,14 @@ class TeacherController extends Controller
 
     protected function authorizeTeacherCourse(Course $course)
     {
-        if ($course->teacher_id !== Auth::id()) {
+        if (! $course->groups()->where('teacher_id', Auth::id())->exists()) {
+            abort(403);
+        }
+    }
+
+    protected function authorizeTeacherGroup(Course $course, Group $group)
+    {
+        if ($group->course_id !== $course->id || $group->teacher_id !== Auth::id()) {
             abort(403);
         }
     }

@@ -7,16 +7,11 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['teacher_id', 'name', 'description', 'monthly_fee', 'monthly_sessions','grade'])]
+#[Fillable(['name', 'description', 'monthly_fee', 'monthly_sessions', 'grade'])]
 class Course extends Model
 {
     /** @use HasFactory<CourseFactory> */
     use HasFactory;
-
-    public function teacher()
-    {
-        return $this->belongsTo(User::class, 'teacher_id');
-    }
 
     public function groups()
     {
@@ -32,6 +27,4 @@ class Course extends Model
     {
         return $this->hasManyThrough(Student::class, subscription::class, 'course_id', 'id', 'id', 'student_id');
     }
-
-
 }

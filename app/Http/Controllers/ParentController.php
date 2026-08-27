@@ -7,8 +7,6 @@ use App\Models\Student;
 use App\Models\payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class ParentController extends Controller
 {
@@ -93,113 +91,16 @@ class ParentController extends Controller
             abort(403);
         }
 
-        $amountCents = intval($subscription->course->monthly_fee * 100);
-        $merchantOrderId = 'ORDER_' . now()->timestamp . '_' . $subscription->id;
+        $payment = $subscription->payments()->where('status', 'pending')->latest()->first();
 
-        $subscription->payments()->create([
-            'amount' => $subscription->course->monthly_fee,
-            'status' => 'pending',
-            'paymob_order_id' => $merchantOrderId,
-        ]);
-
-        $authToken = $this->getPaymobAuthToken();
-        $order = $this->createPaymobOrder($authToken, $amountCents, $merchantOrderId, $subscription);
-        $paymentToken = $this->getPaymobPaymentToken($authToken, $order['id'], $amountCents, $subscription);
-
-        return view('parent.paymob-checkout', compact('paymentToken', 'subscription', 'student'));
-    }
-
-    protected function getPaymobAuthToken()
-    {
-        $response = $this->paymobClient()->post('https://accept.paymob.com/api/auth/tokens', [
-            'api_key' => config('services.paymob.api_key'),
-        ]);
-
-        if ($response->failed() || !isset($response['token'])) {
-            Log::error('PayMob auth token request failed', ['body' => $response->body()]);
-            abort(500, 'فشل التحقق من PayMob. تحقق من إعدادات API.');
-        }
-
-        return $response['token'];
-    }
-
-    protected function createPaymobOrder(string $authToken, int $amountCents, string $merchantOrderId, \App\Models\subscription $subscription): array
-    {
-        $response = $this->paymobClient()->withToken($authToken)
-            ->post('https://accept.paymob.com/api/ecommerce/orders', [
-                'delivery_needed' => false,
-                'amount_cents' => $amountCents,
-                'currency' => config('services.paymob.currency'),
-                'merchant_order_id' => $merchantOrderId,
-                'items' => [
-                    [
-                        'name' => $subscription->course->name,
-                        'amount_cents' => $amountCents,
-                        'description' => 'دفع اشتراك دورة',
-                        'quantity' => 1,
-                    ],
-                ],
+        if (!$payment) {
+            $payment = $subscription->payments()->create([
+                'amount' => $subscription->course->monthly_fee,
+                'status' => 'pending',
             ]);
-
-        if ($response->failed() || !isset($response['id'])) {
-            Log::error('PayMob order creation failed', ['body' => $response->body()]);
-            abort(500, 'فشل إنشاء طلب PayMob.');
         }
 
-        return $response->json();
-    }
-
-    protected function getPaymobPaymentToken(string $authToken, int $orderId, int $amountCents, \App\Models\subscription $subscription): string
-    {
-        $user = auth()->guard('web')->user();
-
-        $response = $this->paymobClient()->withToken($authToken)
-            ->post('https://accept.paymob.com/api/acceptance/payment_keys', [
-                'amount_cents' => $amountCents,
-                'expiration' => 3600,
-                'order_id' => $orderId,
-                'billing_data' => [
-                    'first_name' => $user->name,
-                    'last_name' => 'Parent',
-                    'email' => $user->email,
-                    'phone_number' => $user->phone_number ?? '0000000000',
-                    'country' => 'AE',
-                    'city' => 'Dubai',
-                    'state' => 'NA',
-                    'street' => 'NA',
-                    'building' => 'NA',
-                    'floor' => 'NA',
-                    'apartment' => 'NA',
-                    'postal_code' => '00000',
-                    'shipping_method' => 'NA',
-                ],
-                'currency' => config('services.paymob.currency'),
-                'integration_id' => config('services.paymob.integration_id'),
-                'redirect_url' => config('services.paymob.redirect_url'),
-            ]);
-
-        if ($response->failed() || !isset($response['token'])) {
-            Log::error('PayMob payment key request failed', ['body' => $response->body()]);
-            abort(500, 'فشل إنشاء مفتاح دفع PayMob.');
-        }
-
-        return $response['token'];
-    }
-
-    protected function paymobClient()
-    {
-        $client = Http::acceptJson();
-
-        if ($this->shouldDisablePaymobSslVerification()) {
-            $client = $client->withoutVerifying();
-        }
-
-        return $client;
-    }
-
-    protected function shouldDisablePaymobSslVerification(): bool
-    {
-        return app()->environment(['local', 'testing']) || config('services.paymob.mode') === 'test';
+        return view('parent.checkout', compact('payment', 'subscription', 'student'));
     }
 
     protected function authorizeStudent(Student $student)
