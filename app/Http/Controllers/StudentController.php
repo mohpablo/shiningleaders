@@ -14,7 +14,7 @@ class StudentController extends Controller
 
         // استدعاء الطلاب مع العلاقات (الكورسات وولي الأمر) لتجنب مشكلة N+1 Query
         // وعرض 15 طالب في كل صفحة (Pagination)
-        $students = Student::with(['courses', 'parent'])
+        $students = Student::with(['courses', 'groups.course', 'parent'])
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('school', 'like', "%{$search}%")

@@ -35,6 +35,7 @@ class ParentController extends Controller
 
         $student->load([
             'courses',
+            'groups.course',
             'subscriptions.course',
             'subscriptions.payments',
             'sessionRecords' => fn ($query) => $query->with('group.course')->latest('session_number'),
@@ -45,6 +46,7 @@ class ParentController extends Controller
             ->unique('id')
             ->values();
         $selectedCourseIds = $student->courses->pluck('id')
+            ->merge($student->groups->pluck('course_id'))
             ->merge($enrolledCourses->pluck('id'))
             ->unique()
             ->values();

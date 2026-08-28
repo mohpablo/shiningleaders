@@ -46,9 +46,15 @@
                             <span class="text-sm font-bold">{{ $student->phone_number ?? $student->parent?->phone ?? '-' }}</span>
                         </td>
                         <td class="p-4 border-2 border-midnight">
-                            @if($student->courses->count() > 0)
+                            @php
+                                $studentCourses = $student->courses
+                                    ->merge($student->groups->map(fn ($group) => $group->course))
+                                    ->filter()
+                                    ->unique('id');
+                            @endphp
+                            @if($studentCourses->count() > 0)
                             <div class="flex flex-wrap gap-2">
-                                @foreach($student->courses as $course)
+                                @foreach($studentCourses as $course)
                                 <span class="bg-terracotta text-white text-xs px-2 py-1 font-bold border border-midnight rounded-md">
                                     {{ $course->name }}
                                 </span>

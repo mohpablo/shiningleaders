@@ -56,7 +56,7 @@ class AdminController extends Controller
         $students = Student::where(function ($query) {
                 $query->whereHas('courses')->orWhereHas('subscriptions');
             })
-            ->with(['parent', 'courses', 'subscriptions.course', 'subscriptions.payments'])
+            ->with(['parent', 'courses', 'groups.course', 'subscriptions.course', 'subscriptions.payments'])
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('students.name', 'like', "%{$search}%")
                     ->orWhereHas('parent', fn ($parentQuery) => $parentQuery

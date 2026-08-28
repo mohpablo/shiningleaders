@@ -35,6 +35,7 @@
                     @forelse($students as $student)
                         @php
                             $studentCourses = $student->courses
+                                ->merge($student->groups->map(fn ($group) => $group->course))
                                 ->merge($student->subscriptions->map(fn ($subscription) => $subscription->course))
                                 ->filter()
                                 ->unique('id');
