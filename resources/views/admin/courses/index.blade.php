@@ -54,7 +54,7 @@
                         </td>
 
                         <td class="border-2 border-midnight p-4">{{ $course->groups_count }}</td>
-                        <td class="border-2 border-midnight p-4">{{ $course->total_students_count }}</td
+                        <td class="border-2 border-midnight p-4">{{ $course->total_students_count }}</td>
                             <td class="border-2 border-midnight p-4">{{ $course->monthly_sessions ?? 0 }}</td>
                         <td class="border-2 border-midnight p-4">{{ number_format($course->monthly_fee, 2) }} د.إ</td>
                         <td class="border-2 border-midnight p-4 space-x-2 space-x-reverse whitespace-nowrap text-left">
