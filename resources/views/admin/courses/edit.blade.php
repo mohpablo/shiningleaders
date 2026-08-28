@@ -76,15 +76,19 @@
                 @php
                     $currentPageStudentIds = $students->pluck('id')->map(fn($id) => (string)$id)->all();
                     $currentPageTeacherIds = $teachers->pluck('id')->map(fn($id) => (string)$id)->all();
+                    
+                    // Safe parsing for old arrays to avoid array_map type errors on null requests
+                    $rawSelected = request('selected_students', old('student_ids', []));
+                    $safeSelectedStudents = is_array($rawSelected) ? array_map('strval', $rawSelected) : [];
                 @endphp
 
                 <!-- نموذج إنشاء مجموعة جديدة مع حفظ الحالة -->
                 <form action="{{ route('admin.course.groups.store', $course) }}" method="POST"
                     x-data="{
                         selectedTeacher: '{{ request('selected_teacher', old('teacher_id', '')) }}',
-                        selectedStudents: {{ json_encode(array_map('strval', request('selected_students', old('student_ids', [])))) }},
-                        teacherSearch: '{{ addslashes($teacherSearch) }}',
-                        studentSearch: '{{ addslashes($studentSearch) }}',
+                        selectedStudents: {{ json_encode($safeSelectedStudents) }},
+                        teacherSearch: {!! json_encode(request('teacher_q', $teacherSearch ?? '')) !!},
+                        studentSearch: {!! json_encode(request('student_q', $studentSearch ?? '')) !!},
                         
                         navigate(extra = {}) {
                             const params = new URLSearchParams(window.location.search);
@@ -154,7 +158,8 @@
                                             @foreach($teachers as $teacher)
                                                 <tr class="transition hover:bg-amber-50 has-checked:bg-amber-50">
                                                     <td class="border-2 border-midnight p-3 text-center">
-                                                        <input type="radio" name="teacher_id" value="{{ $teacher->id }}" x-model="selectedTeacher" class="h-4 w-4 border-sand text-midnight focus:ring-midnight" required>
+                                                        <!-- Required is removed to prevent browser blocks when the checked radio is on another page -->
+                                                        <input type="radio" name="teacher_id" value="{{ $teacher->id }}" x-model="selectedTeacher" class="h-4 w-4 border-sand text-midnight focus:ring-midnight">
                                                     </td>
                                                     <td class="border-2 border-midnight p-3 font-bold">{{ $teacher->name }}</td>
                                                     <td class="border-2 border-midnight p-3">{{ $teacher->email }}</td>
@@ -163,7 +168,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="mt-3">{{ $teachers->appends(['student_q' => $studentSearch, 'selected_teacher' => request('selected_teacher'), 'selected_students' => request('selected_students')])->links() }}</div>
+                                <div class="mt-3">{{ $teachers->appends(['teacher_q' => request('teacher_q'), 'student_q' => request('student_q'), 'selected_teacher' => request('selected_teacher'), 'selected_students' => request('selected_students')])->links() }}</div>
                             </div>
                         </div>
                     </div>
@@ -189,7 +194,7 @@
                                 <p class="text-sm text-midnight/60 sm:col-span-2 lg:col-span-3">لا يوجد طلاب مرتبطون بهذه الدورة بعد.</p>
                             @endforelse
                         </div>
-                        <div class="mt-3">{{ $students->appends(['teacher_q' => $teacherSearch, 'selected_teacher' => request('selected_teacher'), 'selected_students' => request('selected_students')])->links() }}</div>
+                        <div class="mt-3">{{ $students->appends(['teacher_q' => request('teacher_q'), 'student_q' => request('student_q'), 'selected_teacher' => request('selected_teacher'), 'selected_students' => request('selected_students')])->links() }}</div>
                     </div>
                     <div class="mt-5 flex justify-stretch sm:justify-end">
                         <button type="submit" class="w-full rounded-2xl bg-midnight px-5 py-3 text-sm font-bold text-sand transition hover:bg-terracotta sm:w-auto">إضافة مجموعة</button>
@@ -205,11 +210,18 @@
                                 @csrf
                                 @method('PATCH')
                                 <input type="hidden" name="student_ids_present" value="1">
+                                
                                 @foreach($group->students as $assignedStudent)
                                     @if(! $students->getCollection()->contains('id', $assignedStudent->id))
                                         <input type="hidden" name="student_ids[]" value="{{ $assignedStudent->id }}">
                                     @endif
                                 @endforeach
+
+                                <!-- Fallback for teacher if not present on the current paginated page -->
+                                @if(! $teachers->getCollection()->contains('id', $group->teacher_id))
+                                    <input type="hidden" name="teacher_id" value="{{ $group->teacher_id }}">
+                                @endif
+
                                 <div class="grid gap-4 sm:grid-cols-2">
                                     <div>
                                         <label class="mb-2 block text-xs font-bold text-midnight/70">اسم المجموعة</label>
@@ -238,7 +250,7 @@
                                                         @foreach($teachers as $teacher)
                                                             <tr data-search="{{ strtolower($teacher->name . ' ' . $teacher->email) }}" x-show="!teacherSearch || $el.dataset.search.includes(teacherSearch.toLowerCase())" class="transition hover:bg-amber-50 has-checked:bg-amber-50">
                                                                 <td class="border-2 border-midnight p-3 text-center">
-                                                                    <input type="radio" name="teacher_id" value="{{ $teacher->id }}" {{ (string) $group->teacher_id === (string) $teacher->id ? 'checked' : '' }} class="h-4 w-4 border-sand text-midnight focus:ring-midnight" required>
+                                                                    <input type="radio" name="teacher_id" value="{{ $teacher->id }}" {{ (string) $group->teacher_id === (string) $teacher->id ? 'checked' : '' }} class="h-4 w-4 border-sand text-midnight focus:ring-midnight">
                                                                 </td>
                                                                 <td class="border-2 border-midnight p-3 font-bold">{{ $teacher->name }}</td>
                                                                 <td class="border-2 border-midnight p-3">{{ $teacher->email }}</td>
