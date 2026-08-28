@@ -275,6 +275,8 @@
                                     </label>
                                     @endforeach
                                 </div>
+                                <div class="mt-3">{{ $students->appends(['teacher_q' => request('teacher_q'), 'student_q' => request('student_q'), 'selected_teacher' => request('selected_teacher'), 'selected_students' => request('selected_students')])->links() }}</div>
+                                <p class="mt-2 text-xs text-midnight/50">تنبيه: تصفح الصفحات هنا يعيد تحميل الصفحة، لذا احفظ أي تعديلات قبل الانتقال لصفحة أخرى.</p>
                             </div>
                             <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
                                 <button type="submit" class="w-full rounded-2xl bg-midnight px-5 py-3 text-sm font-bold text-sand transition hover:bg-terracotta sm:w-auto">حفظ التعديلات</button>
