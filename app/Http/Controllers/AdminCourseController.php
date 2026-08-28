@@ -96,8 +96,11 @@ class AdminCourseController extends Controller
             ->paginate(8, ['*'], 'teacher_page')
             ->withQueryString();
 
-        // 2. Load ALL Students so you can assign/unassign them
+        // 2. Load ONLY Students related to this specific Course
         $students = Student::query()
+            ->whereHas('courses', function ($query) use ($course) {
+                $query->where('courses.id', $course->id);
+            })
             ->when($studentSearch !== '', function ($query) use ($studentSearch) {
                 $query->where(function ($q) use ($studentSearch) {
                     $q->where('name', 'like', "%{$studentSearch}%")
@@ -109,7 +112,7 @@ class AdminCourseController extends Controller
                         );
                 });
             })
-            ->with(['parent', 'groups']) // Preload relations for efficient checking in Blade
+            ->with(['parent', 'groups'])
             ->orderBy('name')
             ->paginate(8, ['*'], 'student_page')
             ->withQueryString();
