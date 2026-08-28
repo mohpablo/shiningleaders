@@ -16,7 +16,7 @@ class AdminCourseController extends Controller
         $search = trim($request->string('q')->toString());
 
         $courses = Course::withCount('groups')
-            ->with(['students', 'subscribedStudents', 'groups.students'])
+            ->with(['students', 'groups.students'])
             ->when($search !== '', fn($query) => $query->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
@@ -25,14 +25,12 @@ class AdminCourseController extends Controller
             ->latest()
             ->paginate(10);
 
-        // Merge students from direct pivot, subscriptions, and groups
+        // Merge students from direct pivot (course_student) and groups (group_student)
         $courses->getCollection()->transform(function (Course $course) {
-            $directStudents     = $course->students;
-            $subscribedStudents = $course->subscribedStudents;
-            $groupStudents      = $course->groups->flatMap->students;
+            $directStudents = $course->students;
+            $groupStudents  = $course->groups->flatMap->students;
 
             $course->total_students_count = $directStudents
-                ->merge($subscribedStudents)
                 ->merge($groupStudents)
                 ->filter()
                 ->unique('id')
@@ -71,7 +69,7 @@ class AdminCourseController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'grade' => ['required', 'string', 'max:255'], // Added grade validation
+            'grade' => ['required', 'string', 'max:255'],
             'monthly_fee' => ['required', 'numeric', 'min:0'],
             'monthly_sessions' => ['required', 'integer', 'min:1', 'max:100'],
         ]);
@@ -85,6 +83,7 @@ class AdminCourseController extends Controller
     {
         $teacherSearch = trim(request('teacher_q', ''));
         $studentSearch = trim(request('student_q', ''));
+
         $teachers = User::where('role', 'teacher')
             ->when($teacherSearch !== '', fn($query) => $query->where(function ($query) use ($teacherSearch) {
                 $query->where('name', 'like', "%{$teacherSearch}%")
@@ -93,23 +92,21 @@ class AdminCourseController extends Controller
             ->orderBy('name')
             ->paginate(8, ['*'], 'teacher_page')
             ->withQueryString();
+
+        // Query students associated with the course via direct relation or group enrollment
         $students = Student::where(function ($query) use ($course) {
             $query->whereHas('courses', fn($courseQuery) => $courseQuery->whereKey($course->id))
-                ->orWhereHas('subscriptions', fn($subscriptionQuery) => $subscriptionQuery->where('course_id', $course->id))
                 ->orWhereHas('groups', fn($groupQuery) => $groupQuery->where('course_id', $course->id));
         })->when($studentSearch !== '', fn($query) => $query->where(function ($query) use ($studentSearch) {
             $query->where('students.name', 'like', "%{$studentSearch}%")
                 ->orWhereHas('parent', fn($parentQuery) => $parentQuery
                     ->where('name', 'like', "%{$studentSearch}%")
                     ->orWhere('email', 'like', "%{$studentSearch}%"));
-        }))->with([
-            'parent',
-            'subscriptions' => fn($query) => $query
-                ->where('course_id', $course->id)
-                ->with('payments'),
-        ])->orderBy('name')->paginate(8, ['*'], 'student_page')->withQueryString();
+        }))->with('parent')
+        ->orderBy('name')
+        ->paginate(8, ['*'], 'student_page')
+        ->withQueryString();
 
-        // مصفوفة الصفوف الدراسية
         $grades = [
             'Pre-KG',
             'KG 1',
@@ -126,7 +123,6 @@ class AdminCourseController extends Controller
             'Grade 10'
         ];
 
-        // إضافة 'grades' داخل compact
         return view('admin.courses.edit', compact('course', 'teachers', 'students', 'grades', 'teacherSearch', 'studentSearch'));
     }
 
@@ -136,7 +132,7 @@ class AdminCourseController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'monthly_fee' => ['required', 'numeric', 'min:0'],
-            'grade' => ['required', 'string', 'max:255'], // Added grade validation
+            'grade' => ['required', 'string', 'max:255'],
             'monthly_sessions' => ['required', 'integer', 'min:1', 'max:100'],
         ]);
 
@@ -167,6 +163,7 @@ class AdminCourseController extends Controller
             'schedule' => $validated['schedule'],
             'teacher_id' => $validated['teacher_id'],
         ]);
+
         $this->syncGroupStudents($course, $group, $validated['student_ids'] ?? []);
 
         return back()->with('success', 'تم إنشاء المجموعة بنجاح.');
@@ -191,6 +188,7 @@ class AdminCourseController extends Controller
             'schedule' => $validated['schedule'],
             'teacher_id' => $validated['teacher_id'],
         ]);
+
         if ($request->has('student_ids_present')) {
             $this->syncGroupStudents($course, $group, $validated['student_ids'] ?? []);
         }
@@ -214,7 +212,6 @@ class AdminCourseController extends Controller
         $allowedStudentIds = Student::whereIn('id', $studentIds)
             ->where(function ($query) use ($course) {
                 $query->whereHas('courses', fn($courseQuery) => $courseQuery->whereKey($course->id))
-                    ->orWhereHas('subscriptions', fn($subscriptionQuery) => $subscriptionQuery->where('course_id', $course->id))
                     ->orWhereHas('groups', fn($groupQuery) => $groupQuery->where('course_id', $course->id));
             })
             ->pluck('id');
