@@ -15,7 +15,8 @@ class AdminCourseController extends Controller
     {
         $search = trim($request->string('q')->toString());
 
-        $courses = Course::withCount(['groups', 'subscriptions as students_count'])
+        $courses = Course::withCount('groups')
+            ->with('groups.students')
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
@@ -23,6 +24,11 @@ class AdminCourseController extends Controller
             }))
             ->latest()
             ->paginate(10);
+
+        $courses->getCollection()->each(fn (Course $course) => $course->setAttribute(
+            'students_count',
+            $course->groups->flatMap->students->unique('id')->count()
+        ));
 
         return view('admin.courses.index', compact('courses'));
     }
@@ -78,7 +84,8 @@ class AdminCourseController extends Controller
             ->withQueryString();
         $students = Student::where(function ($query) use ($course) {
             $query->whereHas('courses', fn ($courseQuery) => $courseQuery->whereKey($course->id))
-                ->orWhereHas('subscriptions', fn ($subscriptionQuery) => $subscriptionQuery->where('course_id', $course->id));
+                ->orWhereHas('subscriptions', fn ($subscriptionQuery) => $subscriptionQuery->where('course_id', $course->id))
+                ->orWhereHas('groups', fn ($groupQuery) => $groupQuery->where('course_id', $course->id));
         })->when($studentSearch !== '', fn ($query) => $query->where(function ($query) use ($studentSearch) {
             $query->where('students.name', 'like', "%{$studentSearch}%")
                 ->orWhereHas('parent', fn ($parentQuery) => $parentQuery
@@ -196,7 +203,8 @@ class AdminCourseController extends Controller
         $allowedStudentIds = Student::whereIn('id', $studentIds)
             ->where(function ($query) use ($course) {
                 $query->whereHas('courses', fn ($courseQuery) => $courseQuery->whereKey($course->id))
-                    ->orWhereHas('subscriptions', fn ($subscriptionQuery) => $subscriptionQuery->where('course_id', $course->id));
+                        ->orWhereHas('subscriptions', fn ($subscriptionQuery) => $subscriptionQuery->where('course_id', $course->id))
+                        ->orWhereHas('groups', fn ($groupQuery) => $groupQuery->where('course_id', $course->id));
             })
             ->pluck('id');
 
