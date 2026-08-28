@@ -84,28 +84,38 @@ class AdminCourseController extends Controller
         $teacherSearch = trim(request('teacher_q', ''));
         $studentSearch = trim(request('student_q', ''));
 
+        // 1. Load Teachers
         $teachers = User::where('role', 'teacher')
-            ->when($teacherSearch !== '', fn($query) => $query->where(function ($query) use ($teacherSearch) {
-                $query->where('name', 'like', "%{$teacherSearch}%")
-                    ->orWhere('email', 'like', "%{$teacherSearch}%");
-            }))
+            ->when($teacherSearch !== '', function ($query) use ($teacherSearch) {
+                $query->where(function ($q) use ($teacherSearch) {
+                    $q->where('name', 'like', "%{$teacherSearch}%")
+                        ->orWhere('email', 'like', "%{$teacherSearch}%");
+                });
+            })
             ->orderBy('name')
             ->paginate(8, ['*'], 'teacher_page')
             ->withQueryString();
 
-        // Query students associated with the course via direct relation or group enrollment
-        $students = Student::where(function ($query) use ($course) {
-            $query->whereHas('courses', fn($courseQuery) => $courseQuery->whereKey($course->id))
-                ->orWhereHas('groups', fn($groupQuery) => $groupQuery->where('course_id', $course->id));
-        })->when($studentSearch !== '', fn($query) => $query->where(function ($query) use ($studentSearch) {
-            $query->where('students.name', 'like', "%{$studentSearch}%")
-                ->orWhereHas('parent', fn($parentQuery) => $parentQuery
-                    ->where('name', 'like', "%{$studentSearch}%")
-                    ->orWhere('email', 'like', "%{$studentSearch}%"));
-        }))->with('parent')
-        ->orderBy('name')
-        ->paginate(8, ['*'], 'student_page')
-        ->withQueryString();
+        // 2. Load ALL Students so you can assign/unassign them
+        $students = Student::query()
+            ->when($studentSearch !== '', function ($query) use ($studentSearch) {
+                $query->where(function ($q) use ($studentSearch) {
+                    $q->where('name', 'like', "%{$studentSearch}%")
+                        ->orWhereHas(
+                            'parent',
+                            fn($parentQuery) => $parentQuery
+                                ->where('name', 'like', "%{$studentSearch}%")
+                                ->orWhere('email', 'like', "%{$studentSearch}%")
+                        );
+                });
+            })
+            ->with(['parent', 'groups']) // Preload relations for efficient checking in Blade
+            ->orderBy('name')
+            ->paginate(8, ['*'], 'student_page')
+            ->withQueryString();
+
+        // 3. Load Groups with their assigned students for the course UI
+        $course->load(['groups.students', 'groups.teacher']);
 
         $grades = [
             'Pre-KG',
@@ -123,7 +133,14 @@ class AdminCourseController extends Controller
             'Grade 10'
         ];
 
-        return view('admin.courses.edit', compact('course', 'teachers', 'students', 'grades', 'teacherSearch', 'studentSearch'));
+        return view('admin.courses.edit', compact(
+            'course',
+            'teachers',
+            'students',
+            'grades',
+            'teacherSearch',
+            'studentSearch'
+        ));
     }
 
     public function update(Request $request, Course $course)
