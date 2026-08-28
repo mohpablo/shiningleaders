@@ -85,41 +85,41 @@
                 <!-- نموذج إنشاء مجموعة جديدة مع حفظ الحالة -->
                 <form action="{{ route('admin.course.groups.store', $course) }}" method="POST"
                     x-data="{
-selectedTeacher: {!! json_encode(request('selected_teacher', old('teacher_id', ''))) !!},
-                        selectedStudents: {{ json_encode($safeSelectedStudents) }},
-                        teacherSearch: {!! json_encode(request('teacher_q', $teacherSearch ?? '')) !!},
-                        studentSearch: {!! json_encode(request('student_q', $studentSearch ?? '')) !!},
-                        
+                        selectedTeacher: @js(request('selected_teacher', old('teacher_id', ''))),
+                        selectedStudents: @js($safeSelectedStudents),
+                        teacherSearch: @js(request('teacher_q', $teacherSearch ?? '')),
+                        studentSearch: @js(request('student_q', $studentSearch ?? '')),
+
                         navigate(extra = {}) {
                             const params = new URLSearchParams(window.location.search);
                             if (this.teacherSearch) params.set('teacher_q', this.teacherSearch);
                             else params.delete('teacher_q');
-                            
+
                             if (this.studentSearch) params.set('student_q', this.studentSearch);
                             else params.delete('student_q');
-                            
+
                             if (this.selectedTeacher) params.set('selected_teacher', this.selectedTeacher);
                             else params.delete('selected_teacher');
-                            
+
                             params.delete('selected_students[]');
                             this.selectedStudents.forEach(id => params.append('selected_students[]', id));
-                            
+
                             for (const [k, v] of Object.entries(extra)) {
                                 if (v !== null && v !== undefined) params.set(k, v);
                             }
-                            window.location.href = '{{ route('admin.course.edit', $course) }}?' + params.toString();
+                            window.location.href = @js(route('admin.course.edit', $course)) + '?' + params.toString();
                         }
                     }"
                     class="rounded-3xl border-2 border-midnight bg-sand p-5 shadow-[6px_6px_0px_0px_#0B132B] sm:p-6">
                     @csrf
 
                     <!-- حقول مخفية للطلاب المحددين من صفحات أخرى -->
-                    <template x-for="id in selectedStudents.filter(i => !{{ json_encode($currentPageStudentIds) }}.includes(String(i)))" :key="id">
+                    <template x-for="id in selectedStudents.filter(i => !(@js($currentPageStudentIds)).includes(String(i)))" :key="id">
                         <input type="hidden" name="student_ids[]" :value="id">
                     </template>
 
                     <!-- حقل مخفي للمعلم المحدد إذا كان في صفحة أخرى -->
-                    <template x-if="selectedTeacher && !{{ json_encode($currentPageTeacherIds) }}.includes(String(selectedTeacher))">
+                    <template x-if="selectedTeacher && !(@js($currentPageTeacherIds)).includes(String(selectedTeacher))">
                         <input type="hidden" name="teacher_id" :value="selectedTeacher">
                     </template>
 
