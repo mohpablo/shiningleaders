@@ -40,25 +40,30 @@
                 </a>
             </div>
 
-            <div class="overflow-hidden rounded-3xl border border-sand bg-white shadow-xl">
-                <table class="min-w-full text-right text-sm text-midnight">
-                    <thead class="bg-sand text-midnight/80">
+            <form method="GET" action="{{ route('admin.programs.index') }}" class="flex flex-col gap-3 sm:flex-row">
+                <input type="search" name="q" value="{{ request('q') }}" placeholder="ابحث بالاسم أو البريد الإلكتروني" class="min-w-0 flex-1 border-2 border-midnight bg-white px-4 py-3 text-right text-midnight outline-none focus:bg-sand">
+                <button type="submit" class="bg-midnight px-5 py-3 font-bold text-sand transition hover:bg-terracotta">بحث</button>
+            </form>
+
+            <div class="overflow-x-auto border-2 border-midnight bg-sand p-4 shadow-[8px_8px_0px_0px_#0B132B]">
+                <table class="w-full min-w-190 border-collapse text-right text-sm text-midnight">
+                    <thead class="bg-midnight text-sand">
                         <tr>
-                            <th class="px-4 py-4 text-right">الاسم</th>
-                            <th class="px-4 py-4 text-right">البريد</th>
-                            <th class="px-4 py-4 text-right">الدورات</th>
-                            <th class="px-4 py-4 text-right">النسبة</th>
-                            <th class="px-4 py-4 text-right">إجراءات</th>
+                            <th class="border-2 border-midnight p-4 text-right font-bold">الاسم</th>
+                            <th class="border-2 border-midnight p-4 text-right font-bold">البريد</th>
+                            <th class="border-2 border-midnight p-4 text-right font-bold">الدورات</th>
+                            <th class="border-2 border-midnight p-4 text-right font-bold">النسبة</th>
+                            <th class="border-2 border-midnight p-4 text-right font-bold">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-sand/80">
                         @forelse($teachers as $teacher)
-                            <tr class="hover:bg-sand/50">
-                                <td class="px-4 py-4 font-semibold text-midnight">{{ $teacher->name }}</td>
-                                <td class="px-4 py-4">{{ $teacher->email }}</td>
-                                <td class="px-4 py-4">{{ $teacher->courses_count }}</td>
-                                <td class="px-4 py-4">{{ $teacher->teacher_share }}%</td>
-                                <td class="px-4 py-4 text-left flex flex-wrap gap-2">
+                            <tr class="hover:bg-midnight/5 transition-colors">
+                                <td class="border-2 border-midnight p-4 font-semibold text-midnight">{{ $teacher->name }}</td>
+                                <td class="border-2 border-midnight p-4">{{ $teacher->email }}</td>
+                                <td class="border-2 border-midnight p-4">{{ $teacher->courses->count() }}</td>
+                                <td class="border-2 border-midnight p-4">{{ $teacher->teacher_share }}%</td>
+                                <td class="flex flex-wrap gap-2 border-2 border-midnight p-4 text-left">
                                     <a href="{{ route('admin.programs.edit', $teacher) }}" class="inline-flex items-center rounded-full bg-amber-500 px-4 py-2 text-xs font-bold text-white transition hover:bg-amber-600">تعديل</a>
                                     <form action="{{ route('admin.programs.destroy', $teacher) }}" method="POST" class="inline-block">
                                         @csrf
@@ -69,14 +74,14 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-4 py-8 text-center text-midnight/70">لا يوجد مدرسين بعد.</td>
+                                <td colspan="5" class="border-2 border-midnight p-8 text-center text-midnight/70">لا يوجد مدرسين بعد.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
 
-                <div class="rounded-b-3xl bg-sand p-6">
-                    {{ $teachers->links() }}
+                <div class="border-t-2 border-midnight bg-sand p-4 sm:p-6">
+                    {{ $teachers->withQueryString()->links() }}
                 </div>
             </div>
         </div>

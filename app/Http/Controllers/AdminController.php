@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Models\subscription;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
@@ -47,19 +48,37 @@ class AdminController extends Controller
         ));
     }
 
-    public function payments()
+    public function payments(Request $request)
     {
-        $students = Student::whereHas('courses')
-            ->with(['parent', 'courses', 'subscriptions.payments'])
+        $search = trim($request->string('q')->toString());
+        $paymentStatus = $request->string('payment_status')->toString();
+
+        $students = Student::where(function ($query) {
+                $query->whereHas('courses')->orWhereHas('subscriptions');
+            })
+            ->with(['parent', 'courses', 'subscriptions.course', 'subscriptions.payments'])
+            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
+                $query->where('students.name', 'like', "%{$search}%")
+                    ->orWhereHas('parent', fn ($parentQuery) => $parentQuery
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%"))
+                    ->orWhereHas('courses', fn ($courseQuery) => $courseQuery
+                        ->where('name', 'like', "%{$search}%"));
+            }))
+            ->when($paymentStatus === 'paid', fn ($query) => $query->whereHas('subscriptions.payments', fn ($paymentQuery) => $paymentQuery->where('status', 'success')))
             ->latest()
             ->paginate(15);
 
-        return view('admin.payments', compact('students'));
+        return view('admin.payments', compact('students', 'paymentStatus'));
     }
 
     public function markStudentCourseAsPaid(Student $student, Course $course): RedirectResponse
     {
-        abort_unless($student->courses()->whereKey($course->id)->exists(), 404);
+        abort_unless(
+            $student->courses()->whereKey($course->id)->exists()
+                || $student->subscriptions()->where('course_id', $course->id)->exists(),
+            404
+        );
 
         $subscription = $student->subscriptions()->firstOrCreate(
             ['course_id' => $course->id],
@@ -86,7 +105,11 @@ class AdminController extends Controller
 
     public function markStudentCourseAsUnpaid(Student $student, Course $course): RedirectResponse
     {
-        abort_unless($student->courses()->whereKey($course->id)->exists(), 404);
+        abort_unless(
+            $student->courses()->whereKey($course->id)->exists()
+                || $student->subscriptions()->where('course_id', $course->id)->exists(),
+            404
+        );
 
         $subscription = $student->subscriptions()->firstOrCreate(
             ['course_id' => $course->id],

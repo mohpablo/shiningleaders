@@ -1,5 +1,5 @@
 <x-admin>
-    <div class="max-w-3xl space-y-6 rounded-3xl bg-white p-8 shadow-xl border border-sand">
+    <div class="w-full max-w-3xl space-y-6 rounded-3xl border-2 border-midnight bg-white p-5 shadow-[8px_8px_0px_0px_#0B132B] sm:p-8">
         <div>
             <h1 class="text-3xl font-bold text-midnight">إنشاء دورة جديدة</h1>
             <p class="mt-2 text-sm text-midnight/70">حدد اسم الدورة والرسوم الشهرية. يتم اختيار المعلم عند إنشاء المجموعة.</p>
@@ -46,9 +46,9 @@
                 </div>
             </div>
 
-            <div class="flex items-center justify-end gap-3">
-                <a href="{{ route('admin.course') }}" class="rounded-3xl border border-midnight px-5 py-3 text-sm font-bold text-midnight">إلغاء</a>
-                <button type="submit" class="rounded-3xl bg-midnight px-5 py-3 text-sm font-bold text-sand">حفظ الدورة</button>
+            <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+                <a href="{{ route('admin.course') }}" class="w-full rounded-3xl border border-midnight px-5 py-3 text-center text-sm font-bold text-midnight sm:w-auto">إلغاء</a>
+                <button type="submit" class="w-full rounded-3xl bg-midnight px-5 py-3 text-sm font-bold text-sand sm:w-auto">حفظ الدورة</button>
             </div>
         </form>
     </div>

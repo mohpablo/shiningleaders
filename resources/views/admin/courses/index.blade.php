@@ -17,26 +17,31 @@
         </div>
         @endif
 
-        <div class="overflow-hidden rounded-3xl border border-sand bg-white shadow-xl">
-            <table class="min-w-full text-right text-sm text-midnight">
-                <thead class="bg-sand text-midnight/80">
+        <form method="GET" action="{{ route('admin.course') }}" class="flex flex-col gap-3 sm:flex-row">
+            <input type="search" name="q" value="{{ request('q') }}" placeholder="ابحث باسم الدورة أو الصف الدراسي" class="min-w-0 flex-1 border-2 border-midnight bg-white px-4 py-3 text-right text-midnight outline-none focus:bg-sand">
+            <button type="submit" class="bg-midnight px-5 py-3 font-bold text-sand transition hover:bg-terracotta">بحث</button>
+        </form>
+
+        <div class="overflow-x-auto border-2 border-midnight bg-sand p-4 shadow-[8px_8px_0px_0px_#0B132B]">
+            <table class="w-full min-w-225 border-collapse text-right text-sm text-midnight">
+                <thead class="bg-midnight text-sand">
                     <tr>
-                        <th class="px-4 py-4">الدورة</th>
-                        <th class="px-4 py-4">الصف الدراسي</th>
-                        <th class="px-4 py-4">المجموعات</th>
-                        <th class="px-4 py-4">الطلاب</th>
-                        <th class="px-4 py-4">الجلسات/الشهر</th>
-                        <th class="px-4 py-4">الرسوم الشهرية</th>
-                        <th class="px-4 py-4">إجراءات</th>
+                        <th class="border-2 border-midnight p-4 font-bold">الدورة</th>
+                        <th class="border-2 border-midnight p-4 font-bold">الصف الدراسي</th>
+                        <th class="border-2 border-midnight p-4 font-bold">المجموعات</th>
+                        <th class="border-2 border-midnight p-4 font-bold">الطلاب</th>
+                        <th class="border-2 border-midnight p-4 font-bold">الجلسات/الشهر</th>
+                        <th class="border-2 border-midnight p-4 font-bold">الرسوم الشهرية</th>
+                        <th class="border-2 border-midnight p-4 font-bold">إجراءات</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-sand/70">
                     @forelse($courses as $course)
-                    <tr class="hover:bg-sand/50">
-                        <td class="px-4 py-4 font-semibold text-midnight">{{ $course->name }}</td>
+                    <tr class="hover:bg-midnight/5 transition-colors">
+                        <td class="border-2 border-midnight p-4 font-semibold text-midnight">{{ $course->name }}</td>
 
                         <!-- Grade Column with Fallback Badge -->
-                        <td class="px-4 py-4">
+                        <td class="border-2 border-midnight p-4">
                             @if($course->grade)
                             <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-800 border border-slate-300">
                                 {{ $course->grade }}
@@ -48,11 +53,11 @@
                             @endif
                         </td>
 
-                        <td class="px-4 py-4">{{ $course->groups_count }}</td>
-                        <td class="px-4 py-4">{{ $course->students_count }}</td>
-                        <td class="px-4 py-4">{{ $course->monthly_sessions ?? 0 }}</td>
-                        <td class="px-4 py-4">{{ number_format($course->monthly_fee, 2) }} د.إ</td>
-                        <td class="px-4 py-4 space-x-2 space-x-reverse whitespace-nowrap text-left">
+                        <td class="border-2 border-midnight p-4">{{ $course->groups_count }}</td>
+                        <td class="border-2 border-midnight p-4">{{ $course->students_count }}</td>
+                        <td class="border-2 border-midnight p-4">{{ $course->monthly_sessions ?? 0 }}</td>
+                        <td class="border-2 border-midnight p-4">{{ number_format($course->monthly_fee, 2) }} د.إ</td>
+                        <td class="border-2 border-midnight p-4 space-x-2 space-x-reverse whitespace-nowrap text-left">
                             <a href="{{ route('admin.course.edit', $course) }}" class="inline-flex items-center rounded-full bg-amber-500 px-4 py-2 text-xs font-bold text-white transition hover:bg-amber-600">تحرير</a>
                             <form action="{{ route('admin.course.destroy', $course) }}" method="POST" class="inline-block">
                                 @csrf
@@ -63,15 +68,14 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-midnight/70">لا توجد دورات حتى الآن.</td>
+                        <td colspan="7" class="border-2 border-midnight p-8 text-center text-midnight/70">لا توجد دورات حتى الآن.</td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
-        </div>
-
-        <div class="rounded-3xl bg-white p-6 shadow-xl border border-sand">
-            {{ $courses->links() }}
+            <div class="mt-4 border-t-2 border-midnight pt-4">
+                {{ $courses->withQueryString()->links() }}
+            </div>
         </div>
     </div>
 </x-admin>

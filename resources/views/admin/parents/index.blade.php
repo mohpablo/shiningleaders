@@ -14,25 +14,30 @@
                 </div>
             @endif
 
-            <div class="mt-6 overflow-hidden rounded-3xl border border-sand bg-white shadow-xl">
-                <table class="min-w-full text-right text-sm text-midnight">
-                    <thead class="bg-sand text-midnight/80">
+            <form method="GET" action="{{ route('admin.parents.index') }}" class="mt-6 flex flex-col gap-3 sm:flex-row">
+                <input type="search" name="q" value="{{ request('q') }}" placeholder="ابحث باسم ولي الأمر أو البريد الإلكتروني" class="min-w-0 flex-1 border-2 border-midnight bg-white px-4 py-3 text-right text-midnight outline-none focus:bg-sand">
+                <button type="submit" class="bg-midnight px-5 py-3 font-bold text-sand transition hover:bg-terracotta">بحث</button>
+            </form>
+
+            <div class="mt-6 overflow-x-auto border-2 border-midnight bg-sand p-4 shadow-[8px_8px_0px_0px_#0B132B]">
+                <table class="w-full min-w-190 border-collapse text-right text-sm text-midnight">
+                    <thead class="bg-midnight text-sand">
                         <tr>
-                            <th class="px-4 py-4">اسم ولي الأمر</th>
-                            <th class="px-4 py-4">البريد الإلكتروني</th>
-                            <th class="px-4 py-4">عدد الأبناء</th>
-                            <th class="px-4 py-4">الدورات المرتبطة</th>
-                            <th class="px-4 py-4">إجراءات</th>
+                            <th class="border-2 border-midnight p-4 font-bold">اسم ولي الأمر</th>
+                            <th class="border-2 border-midnight p-4 font-bold">البريد الإلكتروني</th>
+                            <th class="border-2 border-midnight p-4 font-bold">عدد الأبناء</th>
+                            <th class="border-2 border-midnight p-4 font-bold">الدورات المرتبطة</th>
+                            <th class="border-2 border-midnight p-4 font-bold">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-sand/80">
                         @forelse($parents as $parent)
-                            <tr class="hover:bg-sand/50">
-                                <td class="px-4 py-4 font-semibold text-midnight">{{ $parent->name }}</td>
-                                <td class="px-4 py-4">{{ $parent->email }}</td>
-                                <td class="px-4 py-4">{{ $parent->students->count() }}</td>
-                                <td class="px-4 py-4">{{ $parent->students->flatMap(fn($student) => $student->subscriptions->pluck('course.name'))->unique()->count() }}</td>
-                                <td class="px-4 py-4 text-left">
+                            <tr class="hover:bg-midnight/5 transition-colors">
+                                <td class="border-2 border-midnight p-4 font-semibold text-midnight">{{ $parent->name }}</td>
+                                <td class="border-2 border-midnight p-4">{{ $parent->email }}</td>
+                                <td class="border-2 border-midnight p-4">{{ $parent->students->count() }}</td>
+                                <td class="border-2 border-midnight p-4">{{ $parent->students->flatMap(fn($student) => $student->subscriptions->pluck('course.name'))->unique()->count() }}</td>
+                                <td class="border-2 border-midnight p-4 text-left">
                                     <a href="{{ route('admin.parents.show', $parent) }}" class="inline-flex items-center rounded-full bg-amber-500 px-4 py-2 text-xs font-bold text-white transition hover:bg-amber-600">عرض</a>
                                     <form action="{{ route('admin.parents.destroy', $parent) }}" method="POST" class="inline-block">
                                         @csrf
@@ -43,15 +48,15 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-4 py-8 text-center text-midnight/70">لا يوجد أولياء أمور بعد.</td>
+                                <td colspan="5" class="border-2 border-midnight p-8 text-center text-midnight/70">لا يوجد أولياء أمور بعد.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
-            <div class="rounded-3xl bg-white p-6 shadow-xl border border-sand">
-                {{ $parents->links() }}
+            <div class="border-x-2 border-b-2 border-midnight bg-sand p-4 sm:p-6">
+                {{ $parents->withQueryString()->links() }}
             </div>
         </div>
     </div>

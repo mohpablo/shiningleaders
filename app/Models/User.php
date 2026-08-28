@@ -24,7 +24,12 @@ class User extends Authenticatable
 
     public function courses()
     {
-        return $this->hasMany(Course::class, 'teacher_id');
+        return $this->belongsToMany(Course::class, 'groups', 'teacher_id', 'course_id')->distinct();
+    }
+
+    public function groups()
+    {
+        return $this->hasMany(Group::class, 'teacher_id');
     }
 
     public function parentProfile()

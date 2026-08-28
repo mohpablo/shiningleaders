@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\StudentFactory;
+use App\Models\GroupStudentSession;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -39,5 +40,10 @@ class Student extends Model
     public function courses()
     {
         return $this->belongsToMany(Course::class);
+    }
+
+    public function sessionRecords()
+    {
+        return $this->hasMany(GroupStudentSession::class);
     }
 }

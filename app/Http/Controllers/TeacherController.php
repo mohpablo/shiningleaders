@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Course;
 use App\Models\Group;
+use App\Models\GroupStudentSession;
 use App\Models\Student;
 use App\Models\subscription;
 use Illuminate\Http\Request;
@@ -15,61 +15,64 @@ class TeacherController extends Controller
     {
         $teacher = Auth::user();
 
-        $courses = Course::whereHas('groups', fn($query) => $query->where('teacher_id', $teacher->id))
-            ->withCount('groups')
-            ->withCount(['subscriptions as students_count'])
+        $groups = Group::where('teacher_id', $teacher->id)
+            ->with(['course', 'students'])
             ->get();
 
-        $earnings = $courses->flatMap(function ($course) {
-            return $course->subscriptions->flatMap->payments;
-        })->where('status', 'success')
+        $studentIds = $groups->flatMap->students->pluck('id')->unique();
+        $courseIds = $groups->pluck('course_id')->unique();
+        $assignedPairs = $groups->flatMap(fn ($group) => $group->students->map(
+            fn ($student) => $group->course_id . ':' . $student->id
+        ));
+
+        $earnings = subscription::whereIn('course_id', $courseIds)
+            ->whereIn('student_id', $studentIds)
+            ->with('payments')
+            ->get()
+            ->filter(fn ($subscription) => $assignedPairs->contains(
+                $subscription->course_id . ':' . $subscription->student_id
+            ))
+            ->flatMap->payments
+            ->where('status', 'success')
             ->sum(function ($payment) use ($teacher) {
                 return $payment->amount * ($teacher->teacher_share / 100);
             });
 
-        $totalGroups = $courses->sum('groups_count');
-        $totalStudents = $courses->sum('students_count');
+        $totalGroups = $groups->count();
+        $totalStudents = $studentIds->count();
 
-        return view('teacher.dashboard', compact('courses', 'earnings', 'totalGroups', 'totalStudents'));
+        return view('teacher.dashboard', compact('groups', 'earnings', 'totalGroups', 'totalStudents'));
     }
 
-    public function courses()
+    public function groups()
     {
-        $courses = Course::whereHas('groups', fn($query) => $query->where('teacher_id', Auth::id()))
-            ->withCount('groups')
-            ->withCount(['subscriptions as students_count'])
+        $groups = Group::where('teacher_id', Auth::id())
+            ->with(['course', 'students'])
             ->paginate(12);
 
-        return view('teacher.courses', compact('courses'));
+        $groups->getCollection()->each(fn (Group $group) => $group->setAttribute(
+            'students_count',
+            $group->students->count()
+        ));
+
+        return view('teacher.groups', compact('groups'));
     }
 
-    public function showCourse(Course $course)
+    public function showGroup(Group $group)
     {
-        $this->authorizeTeacherCourse($course);
+        $this->authorizeTeacherGroup($group);
+        $course = $group->course;
 
-        $groups = $course->groups()
-            ->where('teacher_id', Auth::id())
-            ->withCount('students')
-            ->get();
-        $students = Student::whereHas('groups', function ($query) use ($course) {
-            $query->where('course_id', $course->id)->where('teacher_id', Auth::id());
-        })->with('parent')->get();
+        $students = $group->students()->with(['parent', 'sessionRecords' => fn ($query) => $query->latest('session_number')])->get();
+        $currentSession = $group->sessions_completed + 1;
 
-        return view('teacher.course', compact('course', 'groups', 'students'));
+        return view('teacher.group', compact('course', 'group', 'students', 'currentSession'));
     }
 
-    public function showGroup(Course $course, Group $group)
+    public function completeSession(Group $group)
     {
-        $this->authorizeTeacherGroup($course, $group);
-
-        $students = $group->students()->with('parent')->get();
-
-        return view('teacher.group', compact('course', 'group', 'students'));
-    }
-
-    public function completeSession(Course $course, Group $group)
-    {
-        $this->authorizeTeacherGroup($course, $group);
+        $this->authorizeTeacherGroup($group);
+        $course = $group->course;
 
         $group->increment('sessions_completed');
 
@@ -86,46 +89,45 @@ class TeacherController extends Controller
             }
         }
 
-        return redirect()->route('teacher.courses.groups.show', [$course, $group])
+        return redirect()->route('teacher.groups.show', $group)
             ->with('success', 'تم تسجيل الجلسة المنفذة بنجاح.');
     }
 
-    public function markStudent(Request $request, Course $course, Group $group, Student $student)
+    public function markStudent(Request $request, Group $group, Student $student)
     {
-        $this->authorizeTeacherGroup($course, $group);
+        $this->authorizeTeacherGroup($group);
+        $course = $group->course;
 
         if (! $group->students()->where('student_id', $student->id)->exists()) {
             abort(404);
         }
 
         $validated = $request->validate([
-            'attendance' => ['nullable', 'boolean'],
-            'homework_completed' => ['nullable', 'boolean'],
+            'attendance' => ['required', 'boolean'],
+            'homework_status' => ['required', 'in:completed,partial,not_completed'],
             'comment' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $group->students()->syncWithoutDetaching([
-            $student->id => [
-                'attendance' => boolval($validated['attendance'] ?? false),
-                'homework_completed' => boolval($validated['homework_completed'] ?? false),
-                'comment' => trim($validated['comment'] ?? '') ?: null,
+        GroupStudentSession::updateOrCreate(
+            [
+                'group_id' => $group->id,
+                'student_id' => $student->id,
+                'session_number' => $group->sessions_completed + 1,
             ],
-        ]);
+            [
+                'attendance' => $validated['attendance'],
+                'homework_status' => $validated['homework_status'],
+                'comment' => trim($validated['comment'] ?? '') ?: null,
+            ]
+        );
 
-        return redirect()->route('teacher.courses.groups.show', [$course, $group])
+        return redirect()->route('teacher.groups.show', $group)
             ->with('success', 'تم تحديث حالة الطالب بنجاح.');
     }
 
-    protected function authorizeTeacherCourse(Course $course)
+    protected function authorizeTeacherGroup(Group $group)
     {
-        if (! $course->groups()->where('teacher_id', Auth::id())->exists()) {
-            abort(403);
-        }
-    }
-
-    protected function authorizeTeacherGroup(Course $course, Group $group)
-    {
-        if ($group->course_id !== $course->id || $group->teacher_id !== Auth::id()) {
+        if ($group->teacher_id !== Auth::id()) {
             abort(403);
         }
     }

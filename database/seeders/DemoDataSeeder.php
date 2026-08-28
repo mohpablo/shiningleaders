@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Course;
+use App\Models\GroupStudentSession;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -15,7 +16,7 @@ class DemoDataSeeder extends Seeder
 
     public function run(): void
     {
-        $admin = User::updateOrCreate(
+        User::updateOrCreate(
             ['email' => 'demo.admin@example.com'],
             [
                 'name' => 'Demo Admin',
@@ -105,23 +106,51 @@ class DemoDataSeeder extends Seeder
             ]
         );
 
-        $math->groups()->updateOrCreate(
+        $mathGroup = $math->groups()->updateOrCreate(
             ['name' => 'Demo Mathematics Group'],
             [
                 'teacher_id' => $teacher->id,
                 'schedule' => 'Monday and Wednesday 5-7 PM',
-                'capacity' => 20,
             ]
         );
 
-        $science->groups()->updateOrCreate(
+        $scienceGroup = $science->groups()->updateOrCreate(
             ['name' => 'Demo Science Group'],
             [
                 'teacher_id' => $teacher->id,
                 'schedule' => 'Tuesday and Thursday 4-6 PM',
-                'capacity' => 20,
             ]
         );
+
+        $mathGroup->students()->syncWithoutDetaching([$pendingStudent->id]);
+        $scienceGroup->students()->syncWithoutDetaching([$paidStudent->id]);
+
+        $mathGroup->update(['sessions_completed' => 2]);
+        $scienceGroup->update(['sessions_completed' => 2]);
+
+        $mathSessionOne = GroupStudentSession::updateOrCreate(
+            ['group_id' => $mathGroup->id, 'student_id' => $pendingStudent->id, 'session_number' => 1],
+            ['attendance' => true, 'homework_status' => 'completed', 'comment' => 'أداء ممتاز في التمارين.']
+        );
+        $mathSessionOne->update(['created_at' => now()->subDays(14)]);
+
+        $mathSessionTwo = GroupStudentSession::updateOrCreate(
+            ['group_id' => $mathGroup->id, 'student_id' => $pendingStudent->id, 'session_number' => 2],
+            ['attendance' => true, 'homework_status' => 'partial', 'comment' => 'أنجز نصف الواجب ويحتاج إلى إكمال الباقي.']
+        );
+        $mathSessionTwo->update(['created_at' => now()->subDays(7)]);
+
+        $scienceSessionOne = GroupStudentSession::updateOrCreate(
+            ['group_id' => $scienceGroup->id, 'student_id' => $paidStudent->id, 'session_number' => 1],
+            ['attendance' => false, 'homework_status' => 'not_completed', 'comment' => 'غائب عن الجلسة.']
+        );
+        $scienceSessionOne->update(['created_at' => now()->subDays(12)]);
+
+        $scienceSessionTwo = GroupStudentSession::updateOrCreate(
+            ['group_id' => $scienceGroup->id, 'student_id' => $paidStudent->id, 'session_number' => 2],
+            ['attendance' => true, 'homework_status' => 'completed', 'comment' => 'تحسن واضح في المشاركة.']
+        );
+        $scienceSessionTwo->update(['created_at' => now()->subDays(5)]);
 
         $pendingSubscription->payments()->updateOrCreate(
             ['status' => 'pending'],

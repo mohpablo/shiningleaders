@@ -8,15 +8,32 @@ use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = trim($request->string('q')->toString());
+
         // استدعاء الطلاب مع العلاقات (الكورسات وولي الأمر) لتجنب مشكلة N+1 Query
         // وعرض 15 طالب في كل صفحة (Pagination)
         $students = Student::with(['courses', 'parent'])
+            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('school', 'like', "%{$search}%")
+                    ->orWhere('academic_year', 'like', "%{$search}%")
+                    ->orWhereHas('parent', fn ($parentQuery) => $parentQuery
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%"));
+            }))
             ->latest()
             ->paginate(15);
 
         return view('admin.students.index', compact('students'));
+    }
+
+    public function destroy(Student $student)
+    {
+        $student->delete();
+
+        return redirect()->route('admin.students.index')->with('success', 'تم حذف الطالب بنجاح.');
     }
 
     public function create()

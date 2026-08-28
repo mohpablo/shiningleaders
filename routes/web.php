@@ -40,11 +40,10 @@ Route::middleware(['auth', 'role:parent'])->group(function () {
 
 Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('dashboard');
-    Route::get('/courses', [TeacherController::class, 'courses'])->name('courses');
-    Route::get('/courses/{course}', [TeacherController::class, 'showCourse'])->name('courses.show');
-    Route::get('/courses/{course}/groups/{group}', [TeacherController::class, 'showGroup'])->name('courses.groups.show');
-    Route::post('/courses/{course}/groups/{group}/session/complete', [TeacherController::class, 'completeSession'])->name('courses.groups.session.complete');
-    Route::post('/courses/{course}/groups/{group}/students/{student}/mark', [TeacherController::class, 'markStudent'])->name('courses.groups.students.mark');
+    Route::get('/groups', [TeacherController::class, 'groups'])->name('groups');
+    Route::get('/groups/{group}', [TeacherController::class, 'showGroup'])->name('groups.show');
+    Route::post('/groups/{group}/session/complete', [TeacherController::class, 'completeSession'])->name('groups.session.complete');
+    Route::post('/groups/{group}/students/{student}/mark', [TeacherController::class, 'markStudent'])->name('groups.students.mark');
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -53,6 +52,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::patch('payments/{student}/{course}/paid', [AdminController::class, 'markStudentCourseAsPaid'])->name('payments.paid');
     Route::patch('payments/{student}/{course}/unpaid', [AdminController::class, 'markStudentCourseAsUnpaid'])->name('payments.unpaid');
     Route::get('/students', [StudentController::class, 'index'])->name('students.index');
+    Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
     Route::get('courses', [\App\Http\Controllers\AdminCourseController::class, 'index'])->name('course');
     Route::get('courses/create', [\App\Http\Controllers\AdminCourseController::class, 'create'])->name('course.create');
     Route::post('courses', [\App\Http\Controllers\AdminCourseController::class, 'store'])->name('course.store');

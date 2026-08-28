@@ -14,7 +14,7 @@ class ParentController extends Controller
     {
         $parentId = auth()->guard('web')->id();
         $children = Student::where('parent_id', $parentId)
-            ->with(['subscriptions.course.teacher', 'subscriptions.payments'])
+            ->with(['subscriptions.course', 'subscriptions.payments'])
             ->get();
 
         $subscriptions = $children->flatMap(fn($child) => $child->subscriptions);
@@ -33,14 +33,28 @@ class ParentController extends Controller
     {
         $this->authorizeStudent($student);
 
-        $student->load(['subscriptions.course', 'subscriptions.payments']);
+        $student->load([
+            'courses',
+            'subscriptions.course',
+            'subscriptions.payments',
+            'sessionRecords' => fn ($query) => $query->with('group.course')->latest('session_number'),
+        ]);
+        $enrolledCourses = $student->subscriptions
+            ->map(fn ($subscription) => $subscription->course)
+            ->filter()
+            ->unique('id')
+            ->values();
+        $selectedCourseIds = $student->courses->pluck('id')
+            ->merge($enrolledCourses->pluck('id'))
+            ->unique()
+            ->values();
 
-        return view('parent.student', compact('student'));
+        return view('parent.student', compact('student', 'enrolledCourses', 'selectedCourseIds'));
     }
 
     public function courses()
     {
-        $courses = Course::with('teacher')->paginate(12);
+        $courses = Course::paginate(12);
         $students = Student::where('parent_id', Auth::id())->get();
 
         return view('parent.courses', compact('courses', 'students'));

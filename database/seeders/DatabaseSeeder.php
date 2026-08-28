@@ -27,12 +27,14 @@ class DatabaseSeeder extends Seeder
         //     'password' => 'Mariamel@123',
         //     'role' => 'admin',
         // ]);
-        User::factory()->create([
-            'name' => 'Belal Ashraf',
-            'email' => 'Belalashraf5@gmail.com',
-            'password' => 'Belal@123',
-            'role' => 'admin',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'Belalashraf5@gmail.com'],
+            [
+                'name' => 'Belal Ashraf',
+                'password' => Hash::make('Belal@123'),
+                'role' => 'admin',
+            ]
+        );
         // User::updateOrCreate(
         //     // 1. Find the user by this unique column:
         //     ['email' => 'Mariamelmohammady19@gmail.com'],

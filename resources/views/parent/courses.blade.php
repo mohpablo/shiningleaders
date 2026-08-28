@@ -26,7 +26,7 @@
                     <div class="rounded-3xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
                         أضف طالباً أولاً حتى تتمكن من الاشتراك في هذه الدورة.
                     </div>
-                    <a href="{{ route('parent.add-student') }}" class="mt-4 inline-flex items-center justify-center rounded-3xl bg-midnight px-5 py-3 text-sm font-bold text-sand hover:bg-amber-600 transition">إضافة ابن</a>
+                    <a href="{{ route('add-student') }}" class="mt-4 inline-flex items-center justify-center rounded-3xl bg-midnight px-5 py-3 text-sm font-bold text-sand hover:bg-amber-600 transition">إضافة ابن</a>
                     @else
                     <div class="space-y-3">
                         @foreach($students as $student)

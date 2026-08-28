@@ -48,6 +48,50 @@
                 </div>
             </div>
 
+            <div class="rounded-3xl border border-sand bg-white p-5 shadow-xl sm:p-6">
+                <div class="mb-5">
+                    <h3 class="text-xl font-bold text-midnight sm:text-2xl">متابعة جلسات الطالب</h3>
+                    <p class="mt-1 text-sm text-midnight/70">اطّلع على حضور الطالب وواجباته وملاحظات المعلم في كل جلسة.</p>
+                </div>
+
+                @if($student->sessionRecords->isEmpty())
+                    <div class="rounded-2xl bg-sand/50 p-5 text-center text-sm font-semibold text-midnight/70">
+                        لا توجد سجلات جلسات لهذا الطالب حتى الآن.
+                    </div>
+                @else
+                    <div class="space-y-3">
+                        @foreach($student->sessionRecords as $record)
+                            <article class="rounded-2xl border border-sand bg-sand/50 p-4">
+                                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-bold text-terracotta">{{ $record->group?->course?->name ?? 'دورة غير متاحة' }}</p>
+                                        <h4 class="mt-1 wrap-break-word text-lg font-bold text-midnight">{{ $record->group?->name ?? 'مجموعة غير متاحة' }}</h4>
+                                    </div>
+                                    <div class="shrink-0 text-right text-xs font-semibold text-midnight/70">
+                                        <p>الجلسة {{ $record->session_number }}</p>
+                                        <p class="mt-1">{{ $record->created_at?->format('Y-m-d') ?? '-' }}</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4 grid gap-3 sm:grid-cols-3">
+                                    <div class="rounded-xl bg-white p-3">
+                                        <p class="text-xs text-midnight/70">الحضور</p>
+                                        <p class="mt-1 font-bold {{ $record->attendance ? 'text-emerald-700' : 'text-rose-700' }}">{{ $record->attendance ? 'حاضر' : 'غائب' }}</p>
+                                    </div>
+                                    <div class="rounded-xl bg-white p-3">
+                                        <p class="text-xs text-midnight/70">الواجب</p>
+                                        <p class="mt-1 font-bold text-midnight">{{ ['completed' => 'مكتمل', 'partial' => 'أنجز نصفه', 'not_completed' => 'لم ينجزه'][$record->homework_status] }}</p>
+                                    </div>
+                                    <div class="rounded-xl bg-white p-3 sm:col-span-1">
+                                        <p class="text-xs text-midnight/70">ملاحظات المعلم</p>
+                                        <p class="mt-1 wrap-break-word font-semibold text-midnight">{{ $record->comment ?: 'لا توجد ملاحظات' }}</p>
+                                    </div>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+
             <!-- إضافة دورة جديدة (بطاقات مباشرة بدون dropdown) -->
             <div class="rounded-3xl bg-white p-5 md:p-6 shadow-xl border border-sand">
                 <div class="mb-5">
@@ -57,7 +101,7 @@
 
                 @php
                 $availableCourses = \App\Models\Course::where('grade', $student->academic_year)
-                ->whereNotIn('id', $student->courses->pluck('id'))
+                ->whereNotIn('id', $selectedCourseIds)
                 ->get();
                 @endphp
 
@@ -70,7 +114,7 @@
                     @foreach($availableCourses as $c)
                     <div class="rounded-2xl border border-sand bg-sand/30 p-4 flex flex-col justify-between hover:border-midnight/40 transition">
                         <div>
-                            <h4 class="font-bold text-midnight text-base md:text-lg break-words">{{ $c->name }}</h4>
+                            <h4 class="font-bold text-midnight text-base md:text-lg wrap-break-word">{{ $c->name }}</h4>
                             <div class="mt-2 inline-flex items-center gap-1.5 text-xs md:text-sm text-midnight/80 font-semibold bg-white px-3 py-1 rounded-xl border border-sand">
                                 <span>التكلفة:</span>
                                 <span class="text-midnight font-bold">{{ number_format($c->monthly_fee, 2) }} د.إ</span>
@@ -100,16 +144,20 @@
                     <p class="mt-1 text-xs md:text-sm text-midnight/70">الدورات التي تم تسجيل الطالب بها بالفعل.</p>
                 </div>
 
-                @if($student->courses->isEmpty())
+                @if($enrolledCourses->isEmpty())
                 <div class="rounded-2xl border border-midnight/10 bg-sand/50 p-6 text-center text-midnight/70 font-semibold text-sm md:text-base">
                     لا توجد دورات مسجلة لهذا الطالب حتى الآن.
                 </div>
                 @else
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    @foreach($student->courses as $course)
+                    @foreach($enrolledCourses as $course)
+                    @php($subscription = $student->subscriptions->firstWhere('course_id', $course->id))
                     <div class="rounded-2xl border border-sand bg-white shadow-sm hover:shadow-md transition p-5 flex flex-col justify-between h-full">
                         <div>
-                            <h4 class="text-lg md:text-xl font-bold text-midnight break-words">{{ $course->name }}</h4>
+                            <h4 class="text-lg md:text-xl font-bold text-midnight wrap-break-word">{{ $course->name }}</h4>
+                            <p class="mt-2 text-sm font-semibold {{ $subscription->status === 'active' ? 'text-emerald-700' : 'text-amber-700' }}">
+                                {{ $subscription->status === 'active' ? 'الاشتراك نشط' : 'الاشتراك قيد المراجعة' }}
+                            </p>
                         </div>
 
                         <div class="mt-6 space-y-3 pt-4 border-t border-sand/40">
@@ -117,14 +165,15 @@
                                 التكلفة: {{ number_format($course->monthly_fee, 2) }} د.إ
                             </div>
 
-                            <!-- زر الحذف -->
-                            <form action="{{ route('parent.student.course.remove', [$student, $course]) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من رغبتك في إزالة هذه الدورة من سجل الطالب؟');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="w-full flex justify-center items-center rounded-xl border border-rose-500 bg-white text-rose-600 px-4 py-2 text-xs md:text-sm font-bold hover:bg-rose-500 hover:text-white transition">
-                                    إزالة الدورة
-                                </button>
-                            </form>
+                            @if($subscription->status !== 'active')
+                                <form action="{{ route('parent.student.course.remove', [$student, $course]) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من رغبتك في إزالة هذه الدورة من سجل الطالب؟');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="w-full flex justify-center items-center rounded-xl border border-rose-500 bg-white text-rose-600 px-4 py-2 text-xs md:text-sm font-bold hover:bg-rose-500 hover:text-white transition">
+                                        إزالة الدورة
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                     @endforeach

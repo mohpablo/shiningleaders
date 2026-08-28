@@ -4,15 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Group;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class AdminCourseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = trim($request->string('q')->toString());
+
         $courses = Course::withCount(['groups', 'subscriptions as students_count'])
+            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('grade', 'like', "%{$search}%");
+            }))
             ->latest()
             ->paginate(10);
 
@@ -58,8 +66,30 @@ class AdminCourseController extends Controller
 
     public function edit(Course $course)
     {
-        $teachers = User::where('role', 'teacher')->get();
-        $students = $course->subscriptions()->with('student')->get()->pluck('student')->unique('id');
+        $teacherSearch = trim(request('teacher_q', ''));
+        $studentSearch = trim(request('student_q', ''));
+        $teachers = User::where('role', 'teacher')
+            ->when($teacherSearch !== '', fn ($query) => $query->where(function ($query) use ($teacherSearch) {
+                $query->where('name', 'like', "%{$teacherSearch}%")
+                    ->orWhere('email', 'like', "%{$teacherSearch}%");
+            }))
+            ->orderBy('name')
+            ->paginate(8, ['*'], 'teacher_page')
+            ->withQueryString();
+        $students = Student::where(function ($query) use ($course) {
+            $query->whereHas('courses', fn ($courseQuery) => $courseQuery->whereKey($course->id))
+                ->orWhereHas('subscriptions', fn ($subscriptionQuery) => $subscriptionQuery->where('course_id', $course->id));
+        })->when($studentSearch !== '', fn ($query) => $query->where(function ($query) use ($studentSearch) {
+            $query->where('students.name', 'like', "%{$studentSearch}%")
+                ->orWhereHas('parent', fn ($parentQuery) => $parentQuery
+                    ->where('name', 'like', "%{$studentSearch}%")
+                    ->orWhere('email', 'like', "%{$studentSearch}%"));
+        }))->with([
+            'parent',
+            'subscriptions' => fn ($query) => $query
+                ->where('course_id', $course->id)
+                ->with('payments'),
+        ])->orderBy('name')->paginate(8, ['*'], 'student_page')->withQueryString();
 
         // مصفوفة الصفوف الدراسية
         $grades = [
@@ -79,7 +109,7 @@ class AdminCourseController extends Controller
         ];
 
         // إضافة 'grades' داخل compact
-        return view('admin.courses.edit', compact('course', 'teachers', 'students', 'grades'));
+        return view('admin.courses.edit', compact('course', 'teachers', 'students', 'grades', 'teacherSearch', 'studentSearch'));
     }
 
     public function update(Request $request, Course $course)
@@ -109,11 +139,17 @@ class AdminCourseController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'schedule' => ['required', 'string', 'max:255'],
-            'capacity' => ['nullable', 'integer', 'min:1'],
             'teacher_id' => ['required', Rule::exists('users', 'id')->where(fn($query) => $query->where('role', 'teacher'))],
+            'student_ids' => ['nullable', 'array'],
+            'student_ids.*' => ['integer', 'exists:students,id'],
         ]);
 
-        $course->groups()->create($validated);
+        $group = $course->groups()->create([
+            'name' => $validated['name'],
+            'schedule' => $validated['schedule'],
+            'teacher_id' => $validated['teacher_id'],
+        ]);
+        $this->syncGroupStudents($course, $group, $validated['student_ids'] ?? []);
 
         return back()->with('success', 'تم إنشاء المجموعة بنجاح.');
     }
@@ -125,10 +161,21 @@ class AdminCourseController extends Controller
         }
 
         $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'schedule' => ['required', 'string', 'max:255'],
             'teacher_id' => ['required', Rule::exists('users', 'id')->where(fn($query) => $query->where('role', 'teacher'))],
+            'student_ids' => ['nullable', 'array'],
+            'student_ids.*' => ['integer', 'exists:students,id'],
         ]);
 
-        $group->update($validated);
+        $group->update([
+            'name' => $validated['name'],
+            'schedule' => $validated['schedule'],
+            'teacher_id' => $validated['teacher_id'],
+        ]);
+        if ($request->has('student_ids_present')) {
+            $this->syncGroupStudents($course, $group, $validated['student_ids'] ?? []);
+        }
 
         return back()->with('success', 'تم تحديث معلم المجموعة بنجاح.');
     }
@@ -142,5 +189,17 @@ class AdminCourseController extends Controller
         $group->delete();
 
         return back()->with('success', 'تم حذف المجموعة من الدورة.');
+    }
+
+    protected function syncGroupStudents(Course $course, Group $group, array $studentIds): void
+    {
+        $allowedStudentIds = Student::whereIn('id', $studentIds)
+            ->where(function ($query) use ($course) {
+                $query->whereHas('courses', fn ($courseQuery) => $courseQuery->whereKey($course->id))
+                    ->orWhereHas('subscriptions', fn ($subscriptionQuery) => $subscriptionQuery->where('course_id', $course->id));
+            })
+            ->pluck('id');
+
+        $group->students()->sync($allowedStudentIds);
     }
 }

@@ -7,10 +7,16 @@ use Illuminate\Http\Request;
 
 class AdminTeacherController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = trim($request->string('q')->toString());
+
         $teachers = User::where('role', 'teacher')
-            ->withCount('courses')
+            ->with('courses')
+            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            }))
             ->latest()
             ->paginate(12);
 

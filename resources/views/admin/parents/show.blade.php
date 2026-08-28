@@ -1,6 +1,6 @@
 <x-admin>
     <div class="space-y-6">
-        <div class="rounded-3xl bg-white p-8 shadow-xl border border-sand">
+        <div class="rounded-3xl border-2 border-midnight bg-white p-5 shadow-[8px_8px_0px_0px_#0B132B] sm:p-8">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 class="text-3xl font-bold text-midnight">{{ $parent->name }}</h1>
@@ -32,7 +32,7 @@
             </div>
         </div>
 
-        <div class="rounded-3xl bg-white p-8 shadow-xl border border-sand">
+        <div class="rounded-3xl border-2 border-midnight bg-white p-5 shadow-[8px_8px_0px_0px_#0B132B] sm:p-8">
             <h2 class="text-2xl font-bold text-midnight">الطلاب</h2>
             <p class="mt-2 text-sm text-midnight/70">قائمة الأبناء المرتبطة بهذا ولي الأمر ومعلومات الدورة الخاصة بكل طالب.</p>
 
