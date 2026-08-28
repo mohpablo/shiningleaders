@@ -168,7 +168,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="mt-3">{{ $teachers->appends(['teacher_q' => request('teacher_q'), 'student_q' => request('student_q'), 'selected_teacher' => request('selected_teacher'), 'selected_students' => request('selected_students')])->links() }}</div>
+                                <div class="mt-3" @click="const a = $event.target.closest('a'); if (a) { $event.preventDefault(); const url = new URL(a.href); navigate({ teacher_page: url.searchParams.get('teacher_page') }); }">{{ $teachers->appends(['teacher_q' => request('teacher_q'), 'student_q' => request('student_q'), 'selected_teacher' => request('selected_teacher'), 'selected_students' => request('selected_students')])->links() }}</div>
                             </div>
                         </div>
                     </div>
@@ -194,7 +194,7 @@
                             <p class="text-sm text-midnight/60 sm:col-span-2 lg:col-span-3">لا يوجد طلاب مرتبطون بهذه الدورة بعد.</p>
                             @endforelse
                         </div>
-                        <div class="mt-3">{{ $students->appends(['teacher_q' => request('teacher_q'), 'student_q' => request('student_q'), 'selected_teacher' => request('selected_teacher'), 'selected_students' => request('selected_students')])->links() }}</div>
+                        <div class="mt-3" @click="const a = $event.target.closest('a'); if (a) { $event.preventDefault(); const url = new URL(a.href); navigate({ student_page: url.searchParams.get('student_page') }); }">{{ $students->appends(['teacher_q' => request('teacher_q'), 'student_q' => request('student_q'), 'selected_teacher' => request('selected_teacher'), 'selected_students' => request('selected_students')])->links() }}</div>
                     </div>
                     <div class="mt-5 flex justify-stretch sm:justify-end">
                         <button type="submit" class="w-full rounded-2xl bg-midnight px-5 py-3 text-sm font-bold text-sand transition hover:bg-terracotta sm:w-auto">إضافة مجموعة</button>
