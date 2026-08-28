@@ -11,39 +11,38 @@ use Illuminate\Validation\Rule;
 
 class AdminCourseController extends Controller
 {
-  public function index(Request $request)
-{
-    $search = trim($request->string('q')->toString());
+    public function index(Request $request)
+    {
+        $search = trim($request->string('q')->toString());
 
-    $courses = Course::withCount('groups')
-        ->withCount([
-            'students as direct_students_count',
-            // Count unique students linked via groups
-            'groups as group_students_count' => function ($query) {
-                $query->join('group_student', 'groups.id', '=', 'group_student.group_id');
-            }
-        ])
-        ->with(['students', 'groups.students'])
-        ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
-            $query->where('name', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%")
-                ->orWhere('grade', 'like', "%{$search}%");
-        }))
-        ->latest()
-        ->paginate(10);
+        $courses = Course::withCount('groups')
+            ->with(['students', 'subscribedStudents', 'groups.students'])
+            ->when($search !== '', fn($query) => $query->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('grade', 'like', "%{$search}%");
+            }))
+            ->latest()
+            ->paginate(10);
 
-    // Calculate total unique students combining direct course enrollment + group enrollment
-    $courses->getCollection()->transform(function (Course $course) {
-        $directStudents = $course->students;
-        $groupStudents  = $course->groups->flatMap->students;
+        // Merge students from direct pivot, subscriptions, and groups
+        $courses->getCollection()->transform(function (Course $course) {
+            $directStudents     = $course->students;
+            $subscribedStudents = $course->subscribedStudents;
+            $groupStudents      = $course->groups->flatMap->students;
 
-        $course->total_students_count = $directStudents->merge($groupStudents)->unique('id')->count();
+            $course->total_students_count = $directStudents
+                ->merge($subscribedStudents)
+                ->merge($groupStudents)
+                ->filter()
+                ->unique('id')
+                ->count();
 
-        return $course;
-    });
+            return $course;
+        });
 
-    return view('admin.courses.index', compact('courses'));
-}
+        return view('admin.courses.index', compact('courses'));
+    }
 
     public function create()
     {
@@ -87,7 +86,7 @@ class AdminCourseController extends Controller
         $teacherSearch = trim(request('teacher_q', ''));
         $studentSearch = trim(request('student_q', ''));
         $teachers = User::where('role', 'teacher')
-            ->when($teacherSearch !== '', fn ($query) => $query->where(function ($query) use ($teacherSearch) {
+            ->when($teacherSearch !== '', fn($query) => $query->where(function ($query) use ($teacherSearch) {
                 $query->where('name', 'like', "%{$teacherSearch}%")
                     ->orWhere('email', 'like', "%{$teacherSearch}%");
             }))
@@ -95,17 +94,17 @@ class AdminCourseController extends Controller
             ->paginate(8, ['*'], 'teacher_page')
             ->withQueryString();
         $students = Student::where(function ($query) use ($course) {
-            $query->whereHas('courses', fn ($courseQuery) => $courseQuery->whereKey($course->id))
-                ->orWhereHas('subscriptions', fn ($subscriptionQuery) => $subscriptionQuery->where('course_id', $course->id))
-                ->orWhereHas('groups', fn ($groupQuery) => $groupQuery->where('course_id', $course->id));
-        })->when($studentSearch !== '', fn ($query) => $query->where(function ($query) use ($studentSearch) {
+            $query->whereHas('courses', fn($courseQuery) => $courseQuery->whereKey($course->id))
+                ->orWhereHas('subscriptions', fn($subscriptionQuery) => $subscriptionQuery->where('course_id', $course->id))
+                ->orWhereHas('groups', fn($groupQuery) => $groupQuery->where('course_id', $course->id));
+        })->when($studentSearch !== '', fn($query) => $query->where(function ($query) use ($studentSearch) {
             $query->where('students.name', 'like', "%{$studentSearch}%")
-                ->orWhereHas('parent', fn ($parentQuery) => $parentQuery
+                ->orWhereHas('parent', fn($parentQuery) => $parentQuery
                     ->where('name', 'like', "%{$studentSearch}%")
                     ->orWhere('email', 'like', "%{$studentSearch}%"));
         }))->with([
             'parent',
-            'subscriptions' => fn ($query) => $query
+            'subscriptions' => fn($query) => $query
                 ->where('course_id', $course->id)
                 ->with('payments'),
         ])->orderBy('name')->paginate(8, ['*'], 'student_page')->withQueryString();
@@ -214,9 +213,9 @@ class AdminCourseController extends Controller
     {
         $allowedStudentIds = Student::whereIn('id', $studentIds)
             ->where(function ($query) use ($course) {
-                $query->whereHas('courses', fn ($courseQuery) => $courseQuery->whereKey($course->id))
-                        ->orWhereHas('subscriptions', fn ($subscriptionQuery) => $subscriptionQuery->where('course_id', $course->id))
-                        ->orWhereHas('groups', fn ($groupQuery) => $groupQuery->where('course_id', $course->id));
+                $query->whereHas('courses', fn($courseQuery) => $courseQuery->whereKey($course->id))
+                    ->orWhereHas('subscriptions', fn($subscriptionQuery) => $subscriptionQuery->where('course_id', $course->id))
+                    ->orWhereHas('groups', fn($groupQuery) => $groupQuery->where('course_id', $course->id));
             })
             ->pluck('id');
 

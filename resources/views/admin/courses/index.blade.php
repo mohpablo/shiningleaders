@@ -54,8 +54,8 @@
                         </td>
 
                         <td class="border-2 border-midnight p-4">{{ $course->groups_count }}</td>
-                        <td class="border-2 border-midnight p-4">{{ $course->total_students_count }}</td>
-                        <td class="border-2 border-midnight p-4">{{ $course->monthly_sessions ?? 0 }}</td>
+                        <td class="border-2 border-midnight p-4">{{ $course->total_students_count }}</td
+                            <td class="border-2 border-midnight p-4">{{ $course->monthly_sessions ?? 0 }}</td>
                         <td class="border-2 border-midnight p-4">{{ number_format($course->monthly_fee, 2) }} د.إ</td>
                         <td class="border-2 border-midnight p-4 space-x-2 space-x-reverse whitespace-nowrap text-left">
                             <a href="{{ route('admin.course.edit', $course) }}" class="inline-flex items-center rounded-full bg-amber-500 px-4 py-2 text-xs font-bold text-white transition hover:bg-amber-600">تحرير</a>
