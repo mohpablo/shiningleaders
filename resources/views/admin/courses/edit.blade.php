@@ -32,8 +32,6 @@
                 </div>
 
                 <div class="grid gap-6 sm:grid-cols-2">
-
-                    <!-- حقل الصف الدراسي الجديد -->
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-midnight">الصف الدراسي</label>
                         <select name="grade" class="w-full rounded-3xl border border-sand bg-sand/60 px-4 py-3 text-right text-midnight outline-none focus:border-midnight" required>
@@ -75,8 +73,52 @@
             </div>
 
             <div class="mt-6 space-y-5">
-                <form action="{{ route('admin.course.groups.store', $course) }}" method="POST" class="rounded-3xl border-2 border-midnight bg-sand p-5 shadow-[6px_6px_0px_0px_#0B132B] sm:p-6">
+                @php
+                    $currentPageStudentIds = $students->pluck('id')->map(fn($id) => (string)$id)->all();
+                    $currentPageTeacherIds = $teachers->pluck('id')->map(fn($id) => (string)$id)->all();
+                @endphp
+
+                <!-- نموذج إنشاء مجموعة جديدة مع حفظ الحالة -->
+                <form action="{{ route('admin.course.groups.store', $course) }}" method="POST"
+                    x-data="{
+                        selectedTeacher: '{{ request('selected_teacher', old('teacher_id', '')) }}',
+                        selectedStudents: {{ json_encode(array_map('strval', request('selected_students', old('student_ids', [])))) }},
+                        teacherSearch: '{{ addslashes($teacherSearch) }}',
+                        studentSearch: '{{ addslashes($studentSearch) }}',
+                        
+                        navigate(extra = {}) {
+                            const params = new URLSearchParams(window.location.search);
+                            if (this.teacherSearch) params.set('teacher_q', this.teacherSearch);
+                            else params.delete('teacher_q');
+                            
+                            if (this.studentSearch) params.set('student_q', this.studentSearch);
+                            else params.delete('student_q');
+                            
+                            if (this.selectedTeacher) params.set('selected_teacher', this.selectedTeacher);
+                            else params.delete('selected_teacher');
+                            
+                            params.delete('selected_students[]');
+                            this.selectedStudents.forEach(id => params.append('selected_students[]', id));
+                            
+                            for (const [k, v] of Object.entries(extra)) {
+                                if (v !== null && v !== undefined) params.set(k, v);
+                            }
+                            window.location.href = '{{ route('admin.course.edit', $course) }}?' + params.toString();
+                        }
+                    }"
+                    class="rounded-3xl border-2 border-midnight bg-sand p-5 shadow-[6px_6px_0px_0px_#0B132B] sm:p-6">
                     @csrf
+
+                    <!-- حقول مخفية للطلاب المحددين من صفحات أخرى -->
+                    <template x-for="id in selectedStudents.filter(i => !{{ json_encode($currentPageStudentIds) }}.includes(String(i)))" :key="id">
+                        <input type="hidden" name="student_ids[]" :value="id">
+                    </template>
+
+                    <!-- حقل مخفي للمعلم المحدد إذا كان في صفحة أخرى -->
+                    <template x-if="selectedTeacher && !{{ json_encode($currentPageTeacherIds) }}.includes(String(selectedTeacher))">
+                        <input type="hidden" name="teacher_id" :value="selectedTeacher">
+                    </template>
+
                     <div class="mb-5">
                         <h3 class="text-xl font-bold text-midnight">إنشاء مجموعة جديدة</h3>
                         <p class="mt-1 text-sm text-midnight/70">حدد المعلم والطلاب المرتبطين بهذه المجموعة.</p>
@@ -91,12 +133,12 @@
                             <input type="text" name="schedule" value="{{ old('schedule') }}" class="w-full rounded-2xl border border-sand bg-white px-4 py-3 text-right text-midnight outline-none focus:border-midnight" required>
                         </div>
                         <div class="sm:col-span-2">
-                            <div x-data="{ teacherSearch: '' }">
+                            <div>
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <label class="text-sm font-semibold text-midnight">اختر المعلم</label>
                                     <div class="flex w-full gap-2 sm:w-auto">
-                                        <input type="search" x-model="teacherSearch" name="teacher_q" value="{{ $teacherSearch }}" placeholder="ابحث باسم المعلم أو البريد الإلكتروني" class="min-w-0 flex-1 rounded-2xl border border-sand bg-white px-4 py-3 text-sm text-midnight outline-none focus:border-midnight sm:w-80">
-                                        <button type="button" class="rounded-2xl bg-midnight px-4 py-3 text-xs font-bold text-sand" @click="window.location.href = '{{ route('admin.course.edit', $course) }}?teacher_q=' + encodeURIComponent(teacherSearch) + '&student_q={{ urlencode($studentSearch) }}'">بحث</button>
+                                        <input type="search" x-model="teacherSearch" @keydown.enter.prevent="navigate()" placeholder="ابحث باسم المعلم أو البريد الإلكتروني" class="min-w-0 flex-1 rounded-2xl border border-sand bg-white px-4 py-3 text-sm text-midnight outline-none focus:border-midnight sm:w-80">
+                                        <button type="button" class="rounded-2xl bg-midnight px-4 py-3 text-xs font-bold text-sand" @click="navigate()">بحث</button>
                                     </div>
                                 </div>
                                 <div class="mt-3 overflow-x-auto rounded-2xl border-2 border-midnight bg-white">
@@ -112,7 +154,7 @@
                                             @foreach($teachers as $teacher)
                                                 <tr class="transition hover:bg-amber-50 has-checked:bg-amber-50">
                                                     <td class="border-2 border-midnight p-3 text-center">
-                                                        <input type="radio" name="teacher_id" value="{{ $teacher->id }}" {{ old('teacher_id') == $teacher->id ? 'checked' : '' }} class="h-4 w-4 border-sand text-midnight focus:ring-midnight" required>
+                                                        <input type="radio" name="teacher_id" value="{{ $teacher->id }}" x-model="selectedTeacher" class="h-4 w-4 border-sand text-midnight focus:ring-midnight" required>
                                                     </td>
                                                     <td class="border-2 border-midnight p-3 font-bold">{{ $teacher->name }}</td>
                                                     <td class="border-2 border-midnight p-3">{{ $teacher->email }}</td>
@@ -121,23 +163,23 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="mt-3">{{ $teachers->appends(['student_q' => $studentSearch])->links() }}</div>
+                                <div class="mt-3">{{ $teachers->appends(['student_q' => $studentSearch, 'selected_teacher' => request('selected_teacher'), 'selected_students' => request('selected_students')])->links() }}</div>
                             </div>
                         </div>
                     </div>
                     <div class="mt-5">
                         <div class="flex items-center justify-between gap-3">
-                            <label class="text-sm font-semibold text-midnight">طلاب المجموعة</label>
-                            <span class="text-xs text-midnight/60">اختر طالباً أو أكثر من الصفحة</span>
+                            <label class="text-sm font-semibold text-midnight">طلاب المجموعة (<span x-text="selectedStudents.length"></span> محددون)</label>
+                            <span class="text-xs text-midnight/60">اختر طالباً أو أكثر (يتم حفظ الاختيارات أثناء الترقيم والبحث)</span>
                         </div>
-                        <div x-data="{ studentSearch: '{{ addslashes($studentSearch) }}' }" class="mt-3 flex gap-2">
-                            <input type="search" x-model="studentSearch" name="student_q" value="{{ $studentSearch }}" placeholder="ابحث باسم الطالب أو ولي الأمر" class="min-w-0 flex-1 rounded-2xl border border-sand bg-white px-4 py-3 text-sm text-midnight outline-none focus:border-midnight">
-                            <button type="button" class="rounded-2xl bg-midnight px-4 py-3 text-xs font-bold text-sand" @click="window.location.href = '{{ route('admin.course.edit', $course) }}?student_q=' + encodeURIComponent(studentSearch) + '&teacher_q={{ urlencode($teacherSearch) }}'">بحث</button>
+                        <div class="mt-3 flex gap-2">
+                            <input type="search" x-model="studentSearch" @keydown.enter.prevent="navigate()" placeholder="ابحث باسم الطالب أو ولي الأمر" class="min-w-0 flex-1 rounded-2xl border border-sand bg-white px-4 py-3 text-sm text-midnight outline-none focus:border-midnight">
+                            <button type="button" class="rounded-2xl bg-midnight px-4 py-3 text-xs font-bold text-sand" @click="navigate()">بحث</button>
                         </div>
                         <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                             @forelse($students as $student)
                                 <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-sand bg-white p-3 transition hover:border-midnight has-checked:border-midnight has-checked:bg-amber-50">
-                                    <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" {{ in_array($student->id, old('student_ids', [])) ? 'checked' : '' }} class="mt-1 h-4 w-4 rounded border-sand text-midnight focus:ring-midnight">
+                                    <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" x-model="selectedStudents" class="mt-1 h-4 w-4 rounded border-sand text-midnight focus:ring-midnight">
                                     <span class="min-w-0">
                                         <span class="block wrap-break-word text-sm font-bold text-midnight">{{ $student->name }}</span>
                                         <span class="mt-1 block wrap-break-word text-xs text-midnight/60">{{ $student->parent?->name ?? 'ولي أمر غير معروف' }}</span>
@@ -147,13 +189,14 @@
                                 <p class="text-sm text-midnight/60 sm:col-span-2 lg:col-span-3">لا يوجد طلاب مرتبطون بهذه الدورة بعد.</p>
                             @endforelse
                         </div>
-                        <div class="mt-3">{{ $students->appends(['teacher_q' => $teacherSearch])->links() }}</div>
+                        <div class="mt-3">{{ $students->appends(['teacher_q' => $teacherSearch, 'selected_teacher' => request('selected_teacher'), 'selected_students' => request('selected_students')])->links() }}</div>
                     </div>
                     <div class="mt-5 flex justify-stretch sm:justify-end">
                         <button type="submit" class="w-full rounded-2xl bg-midnight px-5 py-3 text-sm font-bold text-sand transition hover:bg-terracotta sm:w-auto">إضافة مجموعة</button>
                     </div>
                 </form>
 
+                <!-- المجموعات الحالية -->
                 <div class="space-y-4">
                     <h3 class="text-xl font-bold text-midnight">المجموعات الحالية</h3>
                     @forelse($course->groups as $group)
@@ -162,11 +205,11 @@
                                 @csrf
                                 @method('PATCH')
                                 <input type="hidden" name="student_ids_present" value="1">
-                                        @foreach($group->students as $assignedStudent)
-                                            @if(! $students->getCollection()->contains('id', $assignedStudent->id))
-                                                <input type="hidden" name="student_ids[]" value="{{ $assignedStudent->id }}">
-                                            @endif
-                                        @endforeach
+                                @foreach($group->students as $assignedStudent)
+                                    @if(! $students->getCollection()->contains('id', $assignedStudent->id))
+                                        <input type="hidden" name="student_ids[]" value="{{ $assignedStudent->id }}">
+                                    @endif
+                                @endforeach
                                 <div class="grid gap-4 sm:grid-cols-2">
                                     <div>
                                         <label class="mb-2 block text-xs font-bold text-midnight/70">اسم المجموعة</label>
