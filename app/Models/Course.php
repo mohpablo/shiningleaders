@@ -20,7 +20,7 @@ class Course extends Model
 
     public function subscriptions()
     {
-        return $this->hasMany(Subscription::class);
+        return $this->hasMany(subscription::class);
     }
 
     // Direct relationship via course_student pivot table (matching Student model)
@@ -32,6 +32,6 @@ class Course extends Model
     // Students enrolled via Subscriptions table
     public function subscribedStudents()
     {
-        return $this->hasManyThrough(Student::class, Subscription::class, 'course_id', 'id', 'id', 'student_id');
+        return $this->hasManyThrough(Student::class, subscription::class, 'course_id', 'id', 'id', 'student_id');
     }
 }
