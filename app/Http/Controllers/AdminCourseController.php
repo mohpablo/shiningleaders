@@ -11,27 +11,39 @@ use Illuminate\Validation\Rule;
 
 class AdminCourseController extends Controller
 {
-    public function index(Request $request)
-    {
-        $search = trim($request->string('q')->toString());
+  public function index(Request $request)
+{
+    $search = trim($request->string('q')->toString());
 
-        $courses = Course::withCount('groups')
-            ->with('groups.students')
-            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('grade', 'like', "%{$search}%");
-            }))
-            ->latest()
-            ->paginate(10);
+    $courses = Course::withCount('groups')
+        ->withCount([
+            'students as direct_students_count',
+            // Count unique students linked via groups
+            'groups as group_students_count' => function ($query) {
+                $query->join('group_student', 'groups.id', '=', 'group_student.group_id');
+            }
+        ])
+        ->with(['students', 'groups.students'])
+        ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
+            $query->where('name', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhere('grade', 'like', "%{$search}%");
+        }))
+        ->latest()
+        ->paginate(10);
 
-        $courses->getCollection()->each(fn (Course $course) => $course->setAttribute(
-            'students_count',
-            $course->groups->flatMap->students->unique('id')->count()
-        ));
+    // Calculate total unique students combining direct course enrollment + group enrollment
+    $courses->getCollection()->transform(function (Course $course) {
+        $directStudents = $course->students;
+        $groupStudents  = $course->groups->flatMap->students;
 
-        return view('admin.courses.index', compact('courses'));
-    }
+        $course->total_students_count = $directStudents->merge($groupStudents)->unique('id')->count();
+
+        return $course;
+    });
+
+    return view('admin.courses.index', compact('courses'));
+}
 
     public function create()
     {
