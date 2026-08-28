@@ -74,18 +74,18 @@
 
             <div class="mt-6 space-y-5">
                 @php
-                    $currentPageStudentIds = $students->pluck('id')->map(fn($id) => (string)$id)->all();
-                    $currentPageTeacherIds = $teachers->pluck('id')->map(fn($id) => (string)$id)->all();
-                    
-                    // Safe parsing for old arrays to avoid array_map type errors on null requests
-                    $rawSelected = request('selected_students', old('student_ids', []));
-                    $safeSelectedStudents = is_array($rawSelected) ? array_map('strval', $rawSelected) : [];
+                $currentPageStudentIds = $students->pluck('id')->map(fn($id) => (string)$id)->all();
+                $currentPageTeacherIds = $teachers->pluck('id')->map(fn($id) => (string)$id)->all();
+
+                // Safe parsing for old arrays to avoid array_map type errors on null requests
+                $rawSelected = request('selected_students', old('student_ids', []));
+                $safeSelectedStudents = is_array($rawSelected) ? array_map('strval', $rawSelected) : [];
                 @endphp
 
                 <!-- نموذج إنشاء مجموعة جديدة مع حفظ الحالة -->
                 <form action="{{ route('admin.course.groups.store', $course) }}" method="POST"
                     x-data="{
-                        selectedTeacher: '{{ request('selected_teacher', old('teacher_id', '')) }}',
+selectedTeacher: {!! json_encode(request('selected_teacher', old('teacher_id', ''))) !!},
                         selectedStudents: {{ json_encode($safeSelectedStudents) }},
                         teacherSearch: {!! json_encode(request('teacher_q', $teacherSearch ?? '')) !!},
                         studentSearch: {!! json_encode(request('student_q', $studentSearch ?? '')) !!},
@@ -156,14 +156,14 @@
                                         </thead>
                                         <tbody>
                                             @foreach($teachers as $teacher)
-                                                <tr class="transition hover:bg-amber-50 has-checked:bg-amber-50">
-                                                    <td class="border-2 border-midnight p-3 text-center">
-                                                        <!-- Required is removed to prevent browser blocks when the checked radio is on another page -->
-                                                        <input type="radio" name="teacher_id" value="{{ $teacher->id }}" x-model="selectedTeacher" class="h-4 w-4 border-sand text-midnight focus:ring-midnight">
-                                                    </td>
-                                                    <td class="border-2 border-midnight p-3 font-bold">{{ $teacher->name }}</td>
-                                                    <td class="border-2 border-midnight p-3">{{ $teacher->email }}</td>
-                                                </tr>
+                                            <tr class="transition hover:bg-amber-50 has-checked:bg-amber-50">
+                                                <td class="border-2 border-midnight p-3 text-center">
+                                                    <!-- Required is removed to prevent browser blocks when the checked radio is on another page -->
+                                                    <input type="radio" name="teacher_id" value="{{ $teacher->id }}" x-model="selectedTeacher" class="h-4 w-4 border-sand text-midnight focus:ring-midnight">
+                                                </td>
+                                                <td class="border-2 border-midnight p-3 font-bold">{{ $teacher->name }}</td>
+                                                <td class="border-2 border-midnight p-3">{{ $teacher->email }}</td>
+                                            </tr>
                                             @endforeach
                                         </tbody>
                                     </table>
@@ -183,15 +183,15 @@
                         </div>
                         <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                             @forelse($students as $student)
-                                <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-sand bg-white p-3 transition hover:border-midnight has-checked:border-midnight has-checked:bg-amber-50">
-                                    <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" x-model="selectedStudents" class="mt-1 h-4 w-4 rounded border-sand text-midnight focus:ring-midnight">
-                                    <span class="min-w-0">
-                                        <span class="block wrap-break-word text-sm font-bold text-midnight">{{ $student->name }}</span>
-                                        <span class="mt-1 block wrap-break-word text-xs text-midnight/60">{{ $student->parent?->name ?? 'ولي أمر غير معروف' }}</span>
-                                    </span>
-                                </label>
+                            <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-sand bg-white p-3 transition hover:border-midnight has-checked:border-midnight has-checked:bg-amber-50">
+                                <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" x-model="selectedStudents" class="mt-1 h-4 w-4 rounded border-sand text-midnight focus:ring-midnight">
+                                <span class="min-w-0">
+                                    <span class="block wrap-break-word text-sm font-bold text-midnight">{{ $student->name }}</span>
+                                    <span class="mt-1 block wrap-break-word text-xs text-midnight/60">{{ $student->parent?->name ?? 'ولي أمر غير معروف' }}</span>
+                                </span>
+                            </label>
                             @empty
-                                <p class="text-sm text-midnight/60 sm:col-span-2 lg:col-span-3">لا يوجد طلاب مرتبطون بهذه الدورة بعد.</p>
+                            <p class="text-sm text-midnight/60 sm:col-span-2 lg:col-span-3">لا يوجد طلاب مرتبطون بهذه الدورة بعد.</p>
                             @endforelse
                         </div>
                         <div class="mt-3">{{ $students->appends(['teacher_q' => request('teacher_q'), 'student_q' => request('student_q'), 'selected_teacher' => request('selected_teacher'), 'selected_students' => request('selected_students')])->links() }}</div>
@@ -205,89 +205,89 @@
                 <div class="space-y-4">
                     <h3 class="text-xl font-bold text-midnight">المجموعات الحالية</h3>
                     @forelse($course->groups as $group)
-                        <div class="rounded-3xl border-2 border-midnight bg-white p-5 shadow-[4px_4px_0px_0px_#0B132B] sm:p-6">
-                            <form action="{{ route('admin.course.groups.update', [$course, $group]) }}" method="POST">
-                                @csrf
-                                @method('PATCH')
-                                <input type="hidden" name="student_ids_present" value="1">
-                                
-                                @foreach($group->students as $assignedStudent)
-                                    @if(! $students->getCollection()->contains('id', $assignedStudent->id))
-                                        <input type="hidden" name="student_ids[]" value="{{ $assignedStudent->id }}">
-                                    @endif
-                                @endforeach
+                    <div class="rounded-3xl border-2 border-midnight bg-white p-5 shadow-[4px_4px_0px_0px_#0B132B] sm:p-6">
+                        <form action="{{ route('admin.course.groups.update', [$course, $group]) }}" method="POST">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="student_ids_present" value="1">
 
-                                <!-- Fallback for teacher if not present on the current paginated page -->
-                                @if(! $teachers->getCollection()->contains('id', $group->teacher_id))
-                                    <input type="hidden" name="teacher_id" value="{{ $group->teacher_id }}">
-                                @endif
+                            @foreach($group->students as $assignedStudent)
+                            @if(! $students->getCollection()->contains('id', $assignedStudent->id))
+                            <input type="hidden" name="student_ids[]" value="{{ $assignedStudent->id }}">
+                            @endif
+                            @endforeach
 
-                                <div class="grid gap-4 sm:grid-cols-2">
-                                    <div>
-                                        <label class="mb-2 block text-xs font-bold text-midnight/70">اسم المجموعة</label>
-                                        <input type="text" name="name" value="{{ $group->name }}" class="w-full rounded-2xl border border-sand bg-sand/50 px-4 py-3 text-sm text-midnight outline-none focus:border-midnight" required>
-                                    </div>
-                                    <div>
-                                        <label class="mb-2 block text-xs font-bold text-midnight/70">الجدول</label>
-                                        <input type="text" name="schedule" value="{{ $group->schedule }}" class="w-full rounded-2xl border border-sand bg-sand/50 px-4 py-3 text-sm text-midnight outline-none focus:border-midnight" required>
-                                    </div>
-                                    <div class="sm:col-span-2">
-                                        <div x-data="{ teacherSearch: '' }">
-                                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                                <label class="text-xs font-bold text-midnight/70">معلم المجموعة</label>
-                                                <input type="search" x-model="teacherSearch" placeholder="ابحث باسم المعلم أو البريد الإلكتروني" class="w-full rounded-2xl border border-sand bg-white px-4 py-3 text-sm text-midnight outline-none focus:border-midnight sm:w-80">
-                                            </div>
-                                            <div class="mt-3 overflow-x-auto rounded-2xl border-2 border-midnight bg-white">
-                                                <table class="w-full min-w-150 border-collapse text-right text-sm text-midnight">
-                                                    <thead class="bg-midnight text-sand">
-                                                        <tr>
-                                                            <th class="border-2 border-midnight p-3 font-bold">اختيار</th>
-                                                            <th class="border-2 border-midnight p-3 font-bold">اسم المعلم</th>
-                                                            <th class="border-2 border-midnight p-3 font-bold">البريد الإلكتروني</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach($teachers as $teacher)
-                                                            <tr data-search="{{ strtolower($teacher->name . ' ' . $teacher->email) }}" x-show="!teacherSearch || $el.dataset.search.includes(teacherSearch.toLowerCase())" class="transition hover:bg-amber-50 has-checked:bg-amber-50">
-                                                                <td class="border-2 border-midnight p-3 text-center">
-                                                                    <input type="radio" name="teacher_id" value="{{ $teacher->id }}" {{ (string) $group->teacher_id === (string) $teacher->id ? 'checked' : '' }} class="h-4 w-4 border-sand text-midnight focus:ring-midnight">
-                                                                </td>
-                                                                <td class="border-2 border-midnight p-3 font-bold">{{ $teacher->name }}</td>
-                                                                <td class="border-2 border-midnight p-3">{{ $teacher->email }}</td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                            <!-- Fallback for teacher if not present on the current paginated page -->
+                            @if(! $teachers->getCollection()->contains('id', $group->teacher_id))
+                            <input type="hidden" name="teacher_id" value="{{ $group->teacher_id }}">
+                            @endif
+
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label class="mb-2 block text-xs font-bold text-midnight/70">اسم المجموعة</label>
+                                    <input type="text" name="name" value="{{ $group->name }}" class="w-full rounded-2xl border border-sand bg-sand/50 px-4 py-3 text-sm text-midnight outline-none focus:border-midnight" required>
+                                </div>
+                                <div>
+                                    <label class="mb-2 block text-xs font-bold text-midnight/70">الجدول</label>
+                                    <input type="text" name="schedule" value="{{ $group->schedule }}" class="w-full rounded-2xl border border-sand bg-sand/50 px-4 py-3 text-sm text-midnight outline-none focus:border-midnight" required>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <div x-data="{ teacherSearch: '' }">
+                                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                            <label class="text-xs font-bold text-midnight/70">معلم المجموعة</label>
+                                            <input type="search" x-model="teacherSearch" placeholder="ابحث باسم المعلم أو البريد الإلكتروني" class="w-full rounded-2xl border border-sand bg-white px-4 py-3 text-sm text-midnight outline-none focus:border-midnight sm:w-80">
+                                        </div>
+                                        <div class="mt-3 overflow-x-auto rounded-2xl border-2 border-midnight bg-white">
+                                            <table class="w-full min-w-150 border-collapse text-right text-sm text-midnight">
+                                                <thead class="bg-midnight text-sand">
+                                                    <tr>
+                                                        <th class="border-2 border-midnight p-3 font-bold">اختيار</th>
+                                                        <th class="border-2 border-midnight p-3 font-bold">اسم المعلم</th>
+                                                        <th class="border-2 border-midnight p-3 font-bold">البريد الإلكتروني</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($teachers as $teacher)
+                                                    <tr data-search="{{ strtolower($teacher->name . ' ' . $teacher->email) }}" x-show="!teacherSearch || $el.dataset.search.includes(teacherSearch.toLowerCase())" class="transition hover:bg-amber-50 has-checked:bg-amber-50">
+                                                        <td class="border-2 border-midnight p-3 text-center">
+                                                            <input type="radio" name="teacher_id" value="{{ $teacher->id }}" {{ (string) $group->teacher_id === (string) $teacher->id ? 'checked' : '' }} class="h-4 w-4 border-sand text-midnight focus:ring-midnight">
+                                                        </td>
+                                                        <td class="border-2 border-midnight p-3 font-bold">{{ $teacher->name }}</td>
+                                                        <td class="border-2 border-midnight p-3">{{ $teacher->email }}</td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mt-5 border-t border-sand pt-5">
-                                    <div class="flex items-center justify-between gap-3">
-                                        <p class="text-sm font-bold text-midnight">طلاب المجموعة <span class="text-midnight/60">({{ $group->students->count() }})</span></p>
-                                        <span class="text-xs text-midnight/60">اختر لتحديث القائمة</span>
-                                    </div>
-                                    <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                        @foreach($students as $student)
-                                            <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-sand bg-sand/40 p-3 transition hover:border-midnight has-checked:border-midnight has-checked:bg-amber-50">
-                                                <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" {{ $group->students->contains('id', $student->id) ? 'checked' : '' }} class="mt-1 h-4 w-4 rounded border-sand text-midnight focus:ring-midnight">
-                                                <span class="min-w-0 wrap-break-word text-sm font-semibold text-midnight">{{ $student->name }}</span>
-                                            </label>
-                                        @endforeach
-                                    </div>
+                            </div>
+                            <div class="mt-5 border-t border-sand pt-5">
+                                <div class="flex items-center justify-between gap-3">
+                                    <p class="text-sm font-bold text-midnight">طلاب المجموعة <span class="text-midnight/60">({{ $group->students->count() }})</span></p>
+                                    <span class="text-xs text-midnight/60">اختر لتحديث القائمة</span>
                                 </div>
-                                <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
-                                    <button type="submit" class="w-full rounded-2xl bg-midnight px-5 py-3 text-sm font-bold text-sand transition hover:bg-terracotta sm:w-auto">حفظ التعديلات</button>
+                                <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                    @foreach($students as $student)
+                                    <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-sand bg-sand/40 p-3 transition hover:border-midnight has-checked:border-midnight has-checked:bg-amber-50">
+                                        <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" {{ $group->students->contains('id', $student->id) ? 'checked' : '' }} class="mt-1 h-4 w-4 rounded border-sand text-midnight focus:ring-midnight">
+                                        <span class="min-w-0 wrap-break-word text-sm font-semibold text-midnight">{{ $student->name }}</span>
+                                    </label>
+                                    @endforeach
                                 </div>
-                            </form>
-                            <form action="{{ route('admin.course.groups.destroy', [$course, $group]) }}" method="POST" class="mt-3 border-t border-sand pt-3 text-left">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-sm font-bold text-rose-600 transition hover:text-rose-800" onclick="return confirm('هل تريد حذف هذه المجموعة؟');">حذف المجموعة</button>
-                            </form>
-                        </div>
+                            </div>
+                            <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                                <button type="submit" class="w-full rounded-2xl bg-midnight px-5 py-3 text-sm font-bold text-sand transition hover:bg-terracotta sm:w-auto">حفظ التعديلات</button>
+                            </div>
+                        </form>
+                        <form action="{{ route('admin.course.groups.destroy', [$course, $group]) }}" method="POST" class="mt-3 border-t border-sand pt-3 text-left">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-sm font-bold text-rose-600 transition hover:text-rose-800" onclick="return confirm('هل تريد حذف هذه المجموعة؟');">حذف المجموعة</button>
+                        </form>
+                    </div>
                     @empty
-                        <div class="rounded-3xl border-2 border-midnight bg-sand p-6 text-center text-sm text-midnight/70">لا توجد مجموعات لهذه الدورة.</div>
+                    <div class="rounded-3xl border-2 border-midnight bg-sand p-6 text-center text-sm text-midnight/70">لا توجد مجموعات لهذه الدورة.</div>
                     @endforelse
                 </div>
             </div>
@@ -311,9 +311,9 @@
                     <tbody class="divide-y divide-sand/80">
                         @forelse($students as $student)
                         @php
-                            $subscription = $student->subscriptions->first();
-                            $latestPayment = $subscription?->payments?->sortByDesc('created_at')->first();
-                            $isPaid = $latestPayment?->status === 'success';
+                        $subscription = $student->subscriptions->first();
+                        $latestPayment = $subscription?->payments?->sortByDesc('created_at')->first();
+                        $isPaid = $latestPayment?->status === 'success';
                         @endphp
                         <tr class="hover:bg-midnight/5 transition-colors">
                             <td class="border-2 border-midnight p-4">{{ $student->name }}</td>
