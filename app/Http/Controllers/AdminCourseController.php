@@ -227,15 +227,21 @@ class AdminCourseController extends Controller
         return back()->with('success', 'تم حذف المجموعة من الدورة.');
     }
 
-    protected function syncGroupStudents(Course $course, Group $group, array $studentIds): void
-    {
-        $allowedStudentIds = Student::whereIn('id', $studentIds)
-            ->where(function ($query) use ($course) {
-                $query->whereHas('courses', fn($courseQuery) => $courseQuery->whereKey($course->id))
-                    ->orWhereHas('groups', fn($groupQuery) => $groupQuery->where('course_id', $course->id));
-            })
-            ->pluck('id');
+protected function syncGroupStudents(Course $course, Group $group, array $studentIds): void
+{
+    $allowedStudentIds = Student::whereIn('id', $studentIds)
+        ->where(function ($query) use ($course) {
+            // Checks direct assignments (course_student)
+            $query->whereHas('courses', fn($courseQuery) => $courseQuery->whereKey($course->id))
+                // Checks existing group memberships
+                ->orWhereHas('groups', fn($groupQuery) => $groupQuery->where('course_id', $course->id))
+                // NEW: Must also check if they are subscribed!
+                ->orWhereHas('subscriptions', fn($subQuery) => $subQuery->where('course_id', $course->id));
+        })
+        ->pluck('id');
 
-        $group->students()->sync($allowedStudentIds);
-    }
+    // If your UI submits the full list of students every time, keep sync().
+    // If your UI only submits the *newly added* student, change this to syncWithoutDetaching()
+    $group->students()->sync($allowedStudentIds);
+}
 }
