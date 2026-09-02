@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 #[Fillable(['student_id', 'course_id', 'parent_id', 'status', 'valid_until', 'sessions_used', 'sessions_limit'])]
-class subscription extends Model
+class Subscription extends Model
 {
     /** @use HasFactory<SubscriptionFactory> */
     use HasFactory;
