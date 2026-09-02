@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 #[Fillable(['subscription_id', 'amount', 'status', 'failure_reason'])]
-class Payment extends Model
+class payment extends Model
 {
     /** @use HasFactory<PaymentFactory> */
     use HasFactory;
 
     public function subscription()
     {
-        return $this->belongsTo(Subscription::class);
+        return $this->belongsTo(subscription::class);
     }
 }
