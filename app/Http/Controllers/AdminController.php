@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Group;
-use App\Models\payment;
+use App\Models\Payment;
 use App\Models\Student;
-use App\Models\subscription;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
