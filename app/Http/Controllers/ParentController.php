@@ -64,7 +64,7 @@ class ParentController extends Controller
 
     public function payments()
     {
-        $payments = payment::whereHas('subscription', fn($query) => $query->where('parent_id', auth()->guard('web')->id()))
+        $payments = Payment::whereHas('subscription', fn($query) => $query->where('parent_id', auth()->guard('web')->id()))
             ->with(['subscription.course', 'subscription.student'])
             ->latest()
             ->paginate(12);
@@ -99,7 +99,7 @@ class ParentController extends Controller
         return redirect()->route('parent.student.subscription.checkout', [$student, $subscription]);
     }
 
-    public function checkout(Student $student, \App\Models\subscription $subscription)
+    public function checkout(Student $student, \App\Models\Subscription $subscription)
     {
         $this->authorizeStudent($student);
 

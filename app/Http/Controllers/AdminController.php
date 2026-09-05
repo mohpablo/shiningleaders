@@ -29,8 +29,8 @@ class AdminController extends Controller
             $query->where('status', 'success');
         })->count();
 
-        $totalEarnings = payment::where('status', 'success')->sum('amount');
-        $totalPayments = payment::count();
+        $totalEarnings = Payment::where('status', 'success')->sum('amount');
+        $totalPayments = Payment::count();
 
         $latestGroups = Group::with('course')->latest()->limit(5)->get();
 

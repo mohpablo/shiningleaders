@@ -25,7 +25,7 @@ class TeacherController extends Controller
             fn ($student) => $group->course_id . ':' . $student->id
         ));
 
-        $earnings = subscription::whereIn('course_id', $courseIds)
+        $earnings = Subscription::whereIn('course_id', $courseIds)
             ->whereIn('student_id', $studentIds)
             ->with('payments')
             ->get()
@@ -78,7 +78,7 @@ class TeacherController extends Controller
 
         $studentIds = $group->students()->pluck('students.id')->toArray();
 
-        $subscriptions = subscription::where('course_id', $course->id)
+        $subscriptions = Subscription::where('course_id', $course->id)
             ->whereIn('student_id', $studentIds)
             ->where('status', 'active')
             ->get();
