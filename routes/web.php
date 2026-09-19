@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminParentController;
 use App\Http\Controllers\AdminTeacherController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ParentController;
@@ -64,9 +65,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::patch('courses/{course}/groups/{group}', [\App\Http\Controllers\AdminCourseController::class, 'updateGroup'])->name('course.groups.update');
     Route::delete('courses/{course}/groups/{group}', [\App\Http\Controllers\AdminCourseController::class, 'destroyGroup'])->name('course.groups.destroy');
 
-    Route::get('parents', [\App\Http\Controllers\AdminParentController::class, 'index'])->name('parents.index');
-    Route::get('parents/{parent}', [\App\Http\Controllers\AdminParentController::class, 'show'])->name('parents.show');
-    Route::delete('parents/{parent}', [\App\Http\Controllers\AdminParentController::class, 'destroy'])->name('parents.destroy');
+    Route::get('parents', [AdminParentController::class, 'index'])->name('parents.index');
+    Route::get('parents/{parent}', [AdminParentController::class, 'show'])->name('parents.show');
+    Route::delete('parents/{parent}', [AdminParentController::class, 'destroy'])->name('parents.destroy');
+    Route::get('/parents/{parent}/edit', [AdminParentController::class, 'edit'])->name('parents.edit');
+    Route::put('/parents/{parent}', [AdminParentController::class, 'update'])->name('parents.update');
 
     Route::get('programs', [AdminTeacherController::class, 'index'])->name('programs.index');
     Route::get('programs/create', [AdminTeacherController::class, 'create'])->name('programs.create');

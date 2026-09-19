@@ -39,6 +39,7 @@
                                 <td class="border-2 border-midnight p-4">{{ $parent->students->flatMap(fn($student) => $student->subscriptions->pluck('course.name'))->unique()->count() }}</td>
                                 <td class="border-2 border-midnight p-4 text-left">
                                     <a href="{{ route('admin.parents.show', $parent) }}" class="inline-flex items-center rounded-full bg-amber-500 px-4 py-2 text-xs font-bold text-white transition hover:bg-amber-600">عرض</a>
+                                    <a href="{{ route('admin.parents.edit', $parent) }}" class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-blue-700">تعديل كلمة المرور</a>
                                     <form action="{{ route('admin.parents.destroy', $parent) }}" method="POST" class="inline-block">
                                         @csrf
                                         @method('DELETE')
