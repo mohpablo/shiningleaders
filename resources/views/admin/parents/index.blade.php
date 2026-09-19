@@ -27,7 +27,7 @@
                             <th class="border-2 border-midnight p-4 font-bold">البريد الإلكتروني</th>
                             <th class="border-2 border-midnight p-4 font-bold">عدد الأبناء</th>
                             <th class="border-2 border-midnight p-4 font-bold">الدورات المرتبطة</th>
-                            <th class="border-2 border-midnight p-4 font-bold">إجراءات</th>
+                            <th class="border-2 border-midnight p-4 font-bold text-center sm:text-left">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-sand/80">
@@ -37,14 +37,16 @@
                                 <td class="border-2 border-midnight p-4">{{ $parent->email }}</td>
                                 <td class="border-2 border-midnight p-4">{{ $parent->students->count() }}</td>
                                 <td class="border-2 border-midnight p-4">{{ $parent->students->flatMap(fn($student) => $student->subscriptions->pluck('course.name'))->unique()->count() }}</td>
-                                <td class="border-2 border-midnight p-4 text-left">
-                                    <a href="{{ route('admin.parents.show', $parent) }}" class="inline-flex items-center rounded-full bg-amber-500 px-4 py-2 text-xs font-bold text-white transition hover:bg-amber-600">عرض</a>
-                                    <a href="{{ route('admin.parents.edit', $parent) }}" class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-blue-700">تعديل كلمة المرور</a>
-                                    <form action="{{ route('admin.parents.destroy', $parent) }}" method="POST" class="inline-block">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="inline-flex items-center rounded-full bg-rose-500 px-4 py-2 text-xs font-bold text-white transition hover:bg-rose-600" onclick="return confirm('هل تريد حذف هذا ولي الأمر؟ سيتم حذف طلابه أيضًا.');">حذف</button>
-                                    </form>
+                                <td class="border-2 border-midnight p-4">
+                                    <div class="flex flex-wrap items-center justify-start sm:justify-end gap-2">
+                                        <a href="{{ route('admin.parents.show', $parent) }}" class="inline-flex items-center justify-center rounded-full bg-amber-500 px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500/50">عرض</a>
+                                        <a href="{{ route('admin.parents.edit', $parent) }}" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600/50">تعديل كلمة المرور</a>
+                                        <form action="{{ route('admin.parents.destroy', $parent) }}" method="POST" class="inline-flex">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="inline-flex items-center justify-center rounded-full bg-rose-500 px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500/50" onclick="return confirm('هل تريد حذف هذا ولي الأمر؟ سيتم حذف طلابه أيضًا.');">حذف</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
